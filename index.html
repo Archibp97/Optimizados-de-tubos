@@ -3,30 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Optimizador Tubos R8 — Panorama Persianas</title>
+<title>OPTIMIZADOR DE CORTE - TUBO R8 — PERSIANAS PANORAMA </title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg:#ffffff;--bg2:#f5f5f4;--bg3:#efefed;
-    --text:#1c1c1a;--text2:#6b6b67;--text3:#9b9b96;
-    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.25);
-    --green:#1D9E75;--gl:#E1F5EE;--gt:#085041;
-    --blue:#378ADD;--bl:#E6F1FB;--bt:#0C447C;
-    --red:#E24B4A;--rl:#FCEBEB;--rt:#791F1F;
-    --amber:#BA7517;--al:#FAEEDA;--at:#633806;
-    --r:10px;--rs:6px;
-  }
-  @media(prefers-color-scheme:dark){:root{
-    --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#323230;
-    --text:#f0ede8;--text2:#a0a09a;--text3:#6b6b65;
-    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.22);
-    --gl:#04342C;--gt:#9FE1CB;--bl:#042C53;--bt:#B5D4F4;
-    --rl:#501313;--rt:#F7C1C1;--al:#412402;--at:#FAC775;
-  }}
+  :root{--bg:#fff;--bg2:#f5f5f4;--bg3:#efefed;--text:#1c1c1a;--text2:#6b6b67;--text3:#9b9b96;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.25);--green:#1D9E75;--gl:#E1F5EE;--gt:#085041;--blue:#378ADD;--bl:#E6F1FB;--bt:#0C447C;--red:#E24B4A;--rl:#FCEBEB;--rt:#791F1F;--amber:#BA7517;--al:#FAEEDA;--at:#633806;--r:10px;--rs:6px;}
+  @media(prefers-color-scheme:dark){:root{--bg:#1e1e1c;--bg2:#2a2a28;--bg3:#323230;--text:#f0ede8;--text2:#a0a09a;--text3:#6b6b65;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.22);--gl:#04342C;--gt:#9FE1CB;--bl:#042C53;--bt:#B5D4F4;--rl:#501313;--rt:#F7C1C1;--al:#412402;--at:#FAC775;}}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5;}
-
   .titlebar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
   .ticon{width:28px;height:28px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;}
   .ticon svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;}
@@ -39,25 +23,21 @@
   .sync-dot.ok{background:var(--green);}
   .sync-dot.error{background:var(--red);}
   .inv-badge{background:var(--bl);color:var(--bt);font-size:12px;font-weight:500;padding:4px 12px;border-radius:99px;}
-
   .setup-banner{background:var(--bg);border:1.5px solid var(--blue);border-radius:var(--r);padding:20px 24px;margin:24px auto;max-width:1060px;}
   .setup-banner h2{font-size:15px;font-weight:600;margin-bottom:12px;}
   .step{display:flex;gap:12px;align-items:flex-start;font-size:13px;margin-bottom:10px;}
   .step-num{width:22px;height:22px;border-radius:50%;background:var(--blue);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-  .step code{background:var(--bg2);padding:1px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:12px;}
+  .step code{background:var(--bg2);padding:1px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:11px;}
   .cfg-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
   .cfg-inputs input{padding:9px 12px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:13px;font-family:'Consolas',monospace;width:100%;}
   .btn-connect{margin-top:10px;width:100%;padding:10px;background:var(--blue);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;}
   .conn-error{color:var(--red);font-size:12px;margin-top:6px;}
-
   .page{display:none;max-width:1060px;margin:0 auto;padding:24px 20px 60px;}
   .page.active{display:block;}
-
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
   .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:16px 18px;}
   .card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
-
   input[type=number],textarea{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
   input[type=number]:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15);}
   textarea{height:110px;resize:vertical;font-family:'Consolas',monospace;}
@@ -68,9 +48,10 @@
   button:active{transform:scale(0.98);}
   .btn-green{background:var(--green);color:white;border-color:transparent;font-weight:500;}
   .btn-green:hover{background:#178a64;}
+  .btn-red{background:var(--red);color:white;border-color:transparent;font-weight:500;}
+  .btn-red:hover{background:#c43d3c;}
   .btn-run{width:100%;padding:12px;font-size:15px;font-weight:600;margin:16px 0;background:var(--green);color:white;border:none;border-radius:var(--r);}
   .btn-run:hover{background:#178a64;}
-
   .hint{font-size:11px;color:var(--text3);margin:6px 0 10px;}
   .err{color:var(--red);font-size:12px;margin-top:4px;min-height:16px;}
   .cuts-wrap{display:flex;flex-wrap:wrap;gap:5px;max-height:120px;overflow-y:auto;}
@@ -80,16 +61,14 @@
   .badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px;}
   .badge.green{background:var(--gl);color:var(--gt);}
   .badge.blue{background:var(--bl);color:var(--bt);}
-  .badge.amber{background:var(--al);color:var(--at);}
+  .badge.red{background:var(--rl);color:var(--rt);}
   .btn-sm{padding:2px 8px;font-size:11px;border-radius:4px;}
-
   .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 16px;}
   @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr;}}
   .metric{background:var(--bg2);border-radius:var(--rs);padding:12px 14px;}
   .metric .ml{font-size:11px;color:var(--text2);margin-bottom:3px;}
   .metric .mv{font-size:22px;font-weight:600;}
   .metric .ms{font-size:11px;color:var(--text3);margin-top:1px;}
-
   .section-title{font-size:14px;font-weight:600;margin:20px 0 10px;}
   .tube-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;}
   .tube-card.fi{border-left:3px solid var(--blue);}
@@ -106,7 +85,6 @@
   .empty{text-align:center;padding:24px;color:var(--text3);font-size:13px;}
   .divider{height:0.5px;background:var(--border);margin:20px 0;}
   .save-banner{background:var(--gl);color:var(--gt);border-radius:var(--r);padding:14px 18px;font-size:13px;font-weight:500;margin-top:16px;text-align:center;}
-
   /* HISTORICO */
   .period-tabs{display:flex;gap:6px;margin-bottom:20px;}
   .period-tab{padding:6px 16px;border-radius:99px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-size:13px;cursor:pointer;}
@@ -122,10 +100,16 @@
   .hm .hml{font-size:11px;color:var(--text2);margin-bottom:4px;}
   .hm .hmv{font-size:24px;font-weight:600;}
   .hm .hms{font-size:11px;color:var(--text3);margin-top:2px;}
-  .history-table{width:100%;border-collapse:collapse;font-size:13px;}
-  .history-table th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--border);}
-  .history-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);}
-  .history-table tr:last-child td{border-bottom:none;}
+  /* TABLA HISTORICO */
+  .lote-row{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;}
+  .lote-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;gap:12px;}
+  .lote-header:hover{background:var(--bg2);}
+  .lote-info{display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap;}
+  .lote-fecha{font-size:13px;font-weight:500;}
+  .lote-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+  .lote-body{display:none;border-top:0.5px solid var(--border);padding:14px 16px;background:var(--bg2);}
+  .lote-body.open{display:block;}
+  .corte-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg);border-radius:var(--rs);margin-bottom:5px;font-size:13px;}
   .aprov-pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:500;}
   .aprov-high{background:var(--gl);color:var(--gt);}
   .aprov-mid{background:var(--al);color:var(--at);}
@@ -133,6 +117,13 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;}
   .loading{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:13px;padding:16px 0;}
+  /* MODAL CONFIRMACION */
+  .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bg);border-radius:var(--r);padding:24px;max-width:400px;width:90%;}
+  .modal h3{font-size:16px;font-weight:600;margin-bottom:8px;}
+  .modal p{font-size:13px;color:var(--text2);margin-bottom:20px;}
+  .modal-btns{display:flex;gap:8px;justify-content:flex-end;}
 </style>
 </head>
 <body>
@@ -142,8 +133,8 @@
   <h1>Optimizador Tubos R8</h1>
   <span>Panorama Persianas</span>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('optimizador')">Optimizador</button>
-    <button class="nav-tab" onclick="showPage('historico')">Histórico</button>
+    <button class="nav-tab active" onclick="showPage('optimizador',this)">Optimizador</button>
+    <button class="nav-tab" onclick="showPage('historico',this)">Histórico</button>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:12px;">
     <div class="sync-dot" id="sync-dot"></div>
@@ -151,10 +142,22 @@
   </div>
 </div>
 
+<!-- MODAL CONFIRMACION -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Confirmar</h3>
+    <p id="modal-msg"></p>
+    <div class="modal-btns">
+      <button onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-red" id="modal-confirm">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <div class="setup-banner" id="setup-banner">
-  <h2>⚙️ Configuración inicial — conectá tu base de datos Supabase</h2>
-  <div class="step"><div class="step-num">1</div><div>Creá una cuenta gratis en <a href="https://supabase.com" target="_blank" style="color:var(--blue)">supabase.com</a> → nuevo proyecto</div></div>
-  <div class="step"><div class="step-num">2</div><div>En el SQL Editor ejecutá:<br><code>create table inventario (id serial primary key, retazos jsonb not null default '[]'::jsonb);</code><br><code>create table historial (id serial primary key, fecha timestamptz default now(), tubos_nuevos int, retazos_usados int, aprovechamiento numeric, metros_desperdicio numeric, metros_usados numeric);</code><br><code>insert into inventario (retazos) values ('[]'::jsonb);</code></div></div>
+  <h2>⚙️ Configuración inicial</h2>
+  <div class="step"><div class="step-num">1</div><div>Creá cuenta en <a href="https://supabase.com" target="_blank" style="color:var(--blue)">supabase.com</a> → nuevo proyecto</div></div>
+  <div class="step"><div class="step-num">2</div><div>En SQL Editor ejecutá las tablas de inventario e historial (ver README)</div></div>
   <div class="step"><div class="step-num">3</div><div>En <b>Project Settings → API</b> copiá la <b>Project URL</b> y la clave <b>anon public</b></div></div>
   <div class="cfg-inputs">
     <input type="text" id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co"/>
@@ -199,30 +202,21 @@
 <!-- HISTORICO -->
 <div class="page" id="page-historico">
   <div class="period-tabs">
-    <button class="period-tab active" onclick="setPeriod('dia')">Por día</button>
-    <button class="period-tab" onclick="setPeriod('semana')">Por semana</button>
-    <button class="period-tab" onclick="setPeriod('mes')">Por mes</button>
+    <button class="period-tab active" onclick="setPeriod('dia',this)">Por día</button>
+    <button class="period-tab" onclick="setPeriod('semana',this)">Por semana</button>
+    <button class="period-tab" onclick="setPeriod('mes',this)">Por mes</button>
   </div>
   <div id="hist-metrics" class="hist-metrics">
-    <div class="loading"><div class="spinner"></div>Cargando histórico...</div>
+    <div class="loading"><div class="spinner"></div>Cargando...</div>
   </div>
   <div class="charts-grid">
-    <div class="chart-card full">
-      <div class="chart-title">% aprovechamiento</div>
-      <div class="chart-wrap"><canvas id="chart-aprov"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Tubos usados</div>
-      <div class="chart-wrap"><canvas id="chart-tubos"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Metros de desperdicio</div>
-      <div class="chart-wrap"><canvas id="chart-desp"></canvas></div>
-    </div>
+    <div class="chart-card full"><div class="chart-title">% aprovechamiento</div><div class="chart-wrap"><canvas id="chart-aprov"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Tubos usados</div><div class="chart-wrap"><canvas id="chart-tubos"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Metros de desperdicio</div><div class="chart-wrap"><canvas id="chart-desp"></canvas></div></div>
   </div>
   <div class="card">
     <div class="card-title">Detalle de lotes</div>
-    <div id="hist-table"></div>
+    <div id="hist-lotes"></div>
   </div>
 </div>
 
@@ -230,15 +224,16 @@
 const LONGITUD_TUBO=5.98,MIN_RETAZO=0.5,MAX_CORTE=1.77,STORAGE_KEY='supabase_config'
 let sb=null,inventario=[],pedidos=[],currentPeriod='dia'
 let chartAprov=null,chartTubos=null,chartDesp=null
+let historialData=[]
 
 function r3(n){return Math.round(n*1000)/1000}
 function r2(n){return Math.round(n*100)/100}
 
-function showPage(p){
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'))
-  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'))
+function showPage(p,el){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'))
+  document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'))
   document.getElementById('page-'+p).classList.add('active')
-  event.target.classList.add('active')
+  el.classList.add('active')
   if(p==='historico') loadHistorico()
 }
 
@@ -246,6 +241,17 @@ function setSyncStatus(s){
   const d=document.getElementById('sync-dot')
   d.className='sync-dot'+(s==='ok'?' ok':s==='error'?' error':'')
 }
+
+// MODAL
+let modalCallback=null
+function confirmar(titulo,msg,cb){
+  document.getElementById('modal-title').textContent=titulo
+  document.getElementById('modal-msg').textContent=msg
+  modalCallback=cb
+  document.getElementById('modal').classList.add('open')
+}
+function cerrarModal(){document.getElementById('modal').classList.remove('open');modalCallback=null}
+document.getElementById('modal-confirm').onclick=()=>{if(modalCallback)modalCallback();cerrarModal()}
 
 async function conectar(){
   const url=document.getElementById('cfg-url').value.trim()
@@ -255,27 +261,15 @@ async function conectar(){
   errEl.textContent=''
   try{
     sb=supabase.createClient(url,key)
-    // Verificar tabla inventario
-    const{data:invData,error:invErr}=await sb.from('inventario').select('retazos').limit(1)
-    if(invErr)throw invErr
-    // Verificar/crear tabla historial si no existe
-    const{error:hErr}=await sb.from('historial').select('id').limit(1)
-    if(hErr && hErr.code==='42P01'){
-      // tabla no existe, mostrar instruccion
-      errEl.textContent='Falta crear la tabla historial. Ejecutá el SQL completo del paso 2.'
-      return
-    }
+    const{data,error}=await sb.from('inventario').select('retazos').limit(1)
+    if(error)throw error
     localStorage.setItem(STORAGE_KEY,JSON.stringify({url,key}))
-    inventario=invData[0]?.retazos||[]
+    inventario=data[0]?.retazos||[]
     document.getElementById('setup-banner').style.display='none'
-    document.getElementById('page-optimizador').style.display='block'
     setSyncStatus('ok')
     renderInventario()
     renderPedidos()
-  }catch(e){
-    errEl.textContent='Error: '+(e.message||'verificá la URL y la clave.')
-    setSyncStatus('error')
-  }
+  }catch(e){errEl.textContent='Error: '+(e.message||'verificá la URL y la clave.');setSyncStatus('error')}
 }
 
 async function recargarInventario(){
@@ -297,58 +291,49 @@ async function persistInventario(inv){
   }catch(e){setSyncStatus('error')}
 }
 
-async function guardarHistorial(tubosNuevos,retazosUsados,aprovechamiento,metrosDesp,metrosUsados){
+async function guardarHistorial(tubosNuevos,retazosUsados,aprovechamiento,metrosDesp,metrosUsados,cortes){
   if(!sb)return
-  await sb.from('historial').insert({
-    tubos_nuevos:tubosNuevos,
-    retazos_usados:retazosUsados,
+  const{data,error}=await sb.from('historial').insert({
+    tubos_nuevos:tubosNuevos,retazos_usados:retazosUsados,
     aprovechamiento:parseFloat(aprovechamiento),
     metros_desperdicio:parseFloat(metrosDesp),
-    metros_usados:parseFloat(metrosUsados)
-  })
+    metros_usados:parseFloat(metrosUsados),
+    cortes:cortes
+  }).select()
+  return data?.[0]
 }
 
 async function loadHistorico(){
   if(!sb)return
   const{data,error}=await sb.from('historial').select('*').order('fecha',{ascending:true})
   if(error||!data){document.getElementById('hist-metrics').innerHTML='<div class="empty">Sin datos aún.</div>';return}
+  historialData=data
   renderHistorico(data)
 }
 
 function groupBy(data,period){
   const groups={}
   data.forEach(row=>{
-    const d=new Date(row.fecha)
-    let key
+    const d=new Date(row.fecha);let key
     if(period==='dia') key=d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})
-    else if(period==='semana'){
-      const start=new Date(d);start.setDate(d.getDate()-d.getDay())
-      key='Sem '+start.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})
-    } else key=d.toLocaleDateString('es-AR',{month:'short',year:'numeric'})
-    if(!groups[key])groups[key]={label:key,tubos:0,retazos:0,desp:0,usados:0,count:0,aprovs:[]}
-    groups[key].tubos+=row.tubos_nuevos
-    groups[key].retazos+=row.retazos_usados
-    groups[key].desp+=parseFloat(row.metros_desperdicio)
-    groups[key].usados+=parseFloat(row.metros_usados)
+    else if(period==='semana'){const s=new Date(d);s.setDate(d.getDate()-d.getDay());key='Sem '+s.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})}
+    else key=d.toLocaleDateString('es-AR',{month:'short',year:'numeric'})
+    if(!groups[key])groups[key]={label:key,tubos:0,retazos:0,desp:0,usados:0,aprovs:[]}
+    groups[key].tubos+=row.tubos_nuevos;groups[key].retazos+=row.retazos_usados
+    groups[key].desp+=parseFloat(row.metros_desperdicio);groups[key].usados+=parseFloat(row.metros_usados)
     groups[key].aprovs.push(parseFloat(row.aprovechamiento))
-    groups[key].count++
   })
-  return Object.values(groups).map(g=>({
-    ...g,
-    aprov:r2(g.aprovs.reduce((a,b)=>a+b,0)/g.aprovs.length),
-    desp:r2(g.desp),
-    usados:r2(g.usados)
-  }))
+  return Object.values(groups).map(g=>({...g,aprov:r2(g.aprovs.reduce((a,b)=>a+b,0)/g.aprovs.length),desp:r2(g.desp)}))
 }
 
 function renderHistorico(data){
   const grouped=groupBy(data,currentPeriod)
   const labels=grouped.map(g=>g.label)
-  const aprovData=grouped.map(g=>g.aprov)
-  const tubosData=grouped.map(g=>g.tubos)
-  const despData=grouped.map(g=>g.desp)
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches
+  const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)'
+  const tc=isDark?'#a0a09a':'#6b6b67'
+  const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11}}}}}
 
-  // Métricas resumen
   const totalLotes=data.length
   const avgAprov=r2(data.reduce((a,b)=>a+parseFloat(b.aprovechamiento),0)/Math.max(data.length,1))
   const totalTubos=data.reduce((a,b)=>a+b.tubos_nuevos,0)
@@ -357,66 +342,79 @@ function renderHistorico(data){
   document.getElementById('hist-metrics').innerHTML=`
     <div class="hm"><div class="hml">Lotes procesados</div><div class="hmv">${totalLotes}</div><div class="hms">total histórico</div></div>
     <div class="hm"><div class="hml">Aprovechamiento promedio</div><div class="hmv">${avgAprov}%</div><div class="hms">todos los lotes</div></div>
-    <div class="hm"><div class="hml">Tubos totales usados</div><div class="hmv">${totalTubos}</div><div class="hms">${totalDesp} m desperdiciados</div></div>`
-
-  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches
-  const gridColor=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)'
-  const textColor=isDark?'#a0a09a':'#6b6b67'
-
-  const baseOpts={
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false}},
-    scales:{
-      x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11},maxRotation:45}},
-      y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}}
-    }
-  }
+    <div class="hm"><div class="hml">Tubos totales</div><div class="hmv">${totalTubos}</div><div class="hms">${totalDesp} m desperdiciados</div></div>`
 
   if(chartAprov)chartAprov.destroy()
   if(chartTubos)chartTubos.destroy()
   if(chartDesp)chartDesp.destroy()
 
-  chartAprov=new Chart(document.getElementById('chart-aprov'),{
-    type:'line',
-    data:{labels,datasets:[{data:aprovData,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,fill:true,pointRadius:4,pointBackgroundColor:'#1D9E75'}]},
-    options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,max:100,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'%'}}}}
-  })
+  chartAprov=new Chart(document.getElementById('chart-aprov'),{type:'line',data:{labels,datasets:[{data:grouped.map(g=>g.aprov),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,fill:true,pointRadius:4,pointBackgroundColor:'#1D9E75'}]},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,max:100,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'%'}}}}})
+  chartTubos=new Chart(document.getElementById('chart-tubos'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.tubos),backgroundColor:'rgba(55,138,221,0.7)',borderColor:'#378ADD',borderWidth:1,borderRadius:4}]},options:{...baseOpts}})
+  chartDesp=new Chart(document.getElementById('chart-desp'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.desp),backgroundColor:'rgba(226,75,74,0.7)',borderColor:'#E24B4A',borderWidth:1,borderRadius:4}]},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'m'}}}}})
 
-  chartTubos=new Chart(document.getElementById('chart-tubos'),{
-    type:'bar',
-    data:{labels,datasets:[{data:tubosData,backgroundColor:'rgba(55,138,221,0.7)',borderColor:'#378ADD',borderWidth:1,borderRadius:4}]},
-    options:{...baseOpts}
-  })
-
-  chartDesp=new Chart(document.getElementById('chart-desp'),{
-    type:'bar',
-    data:{labels,datasets:[{data:despData,backgroundColor:'rgba(226,75,74,0.7)',borderColor:'#E24B4A',borderWidth:1,borderRadius:4}]},
-    options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'m'}}}}
-  })
-
-  // Tabla detalle (últimos 20 lotes)
-  const recent=[...data].reverse().slice(0,20)
-  let tableHtml='<table class="history-table"><thead><tr><th>Fecha</th><th>Tubos</th><th>Ret. usados</th><th>Aprovech.</th><th>Desperdicio</th></tr></thead><tbody>'
+  // Lotes expandibles
+  const recent=[...data].reverse()
+  let html=''
   recent.forEach(row=>{
     const ap=parseFloat(row.aprovechamiento)
     const cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
-    tableHtml+=`<tr>
-      <td>${fecha}</td>
-      <td>${row.tubos_nuevos}</td>
-      <td>${row.retazos_usados}</td>
-      <td><span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span></td>
-      <td>${parseFloat(row.metros_desperdicio).toFixed(2)} m</td>
-    </tr>`
+    const cortes=row.cortes||[]
+    html+=`<div class="lote-row" id="lote-${row.id}">
+      <div class="lote-header" onclick="toggleLote(${row.id})">
+        <div class="lote-info">
+          <span class="lote-fecha">${fecha}</span>
+          <span class="badge blue">${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''}</span>
+          <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
+          <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(2)} m desperdicio</span>
+          <span style="font-size:12px;color:var(--text3)">${cortes.length} corte${cortes.length!==1?'s':''}</span>
+        </div>
+        <div class="lote-actions" onclick="event.stopPropagation()">
+          <button class="btn-sm btn-red" onclick="eliminarLote(${row.id})">Eliminar lote</button>
+          <span style="color:var(--text3);font-size:16px;">›</span>
+        </div>
+      </div>
+      <div class="lote-body" id="body-${row.id}">
+        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Cortes del lote</div>
+        ${cortes.length?cortes.map((c,i)=>`
+          <div class="corte-item">
+            <span>Corte ${i+1} — <strong>${c.toFixed(3)} m</strong> <span style="color:var(--text3);font-size:12px;">(ancho cortina: ${r3(c+0.03).toFixed(3)} m)</span></span>
+            <button class="btn-sm btn-red" onclick="eliminarCorte(${row.id},${i})">Eliminar</button>
+          </div>`).join(''):'<div class="empty">Sin cortes registrados en este lote.</div>'}
+      </div>
+    </div>`
   })
-  tableHtml+='</tbody></table>'
-  document.getElementById('hist-table').innerHTML=tableHtml
+  document.getElementById('hist-lotes').innerHTML=html||'<div class="empty">Sin lotes registrados.</div>'
 }
 
-function setPeriod(p){
+function toggleLote(id){
+  const body=document.getElementById('body-'+id)
+  body.classList.toggle('open')
+}
+
+function eliminarLote(id){
+  confirmar('Eliminar lote','¿Seguro que querés eliminar este lote completo? Esta acción no se puede deshacer.',async()=>{
+    await sb.from('historial').delete().eq('id',id)
+    await loadHistorico()
+  })
+}
+
+async function eliminarCorte(loteId,corteIdx){
+  const lote=historialData.find(r=>r.id===loteId)
+  if(!lote)return
+  const corteVal=(lote.cortes[corteIdx]+0.03).toFixed(3)
+  confirmar('Eliminar corte',`¿Eliminar el corte ${corteVal} m (tubo ${lote.cortes[corteIdx].toFixed(3)} m) de este lote?`,async()=>{
+    const nuevosCortes=[...lote.cortes]
+    nuevosCortes.splice(corteIdx,1)
+    await sb.from('historial').update({cortes:nuevosCortes}).eq('id',loteId)
+    await loadHistorico()
+  })
+}
+
+function setPeriod(p,el){
   currentPeriod=p
-  document.querySelectorAll('.period-tab').forEach(el=>el.classList.remove('active'))
-  event.target.classList.add('active')
+  document.querySelectorAll('.period-tab').forEach(e=>e.classList.remove('active'))
+  el.classList.add('active')
   loadHistorico()
 }
 
@@ -480,10 +478,7 @@ function greedyPack(cuts,len){
   while(rem.length){
     let bc=null,bs=0
     for(let r=1;r<=rem.length;r++){
-      for(const ic of getCombinations(rem,r)){
-        const s=r3(ic.reduce((a,i)=>a+rem[i],0))
-        if(s<=len&&s>bs){bs=s;bc=ic}
-      }
+      for(const ic of getCombinations(rem,r)){const s=r3(ic.reduce((a,i)=>a+rem[i],0));if(s<=len&&s>bs){bs=s;bc=ic}}
       if(bs>len-0.001)break
     }
     if(!bc){t.push([rem[0]]);rem.splice(0,1);continue}
@@ -503,10 +498,7 @@ function optimizar(){
     while(ch&&esp>0.001){
       ch=false;let best=null,bs=0
       for(let r=1;r<=tr.length;r++){
-        for(const ic of getCombinations(tr,r)){
-          const s=r3(ic.reduce((a,idx)=>a+tr[idx],0))
-          if(s<=esp&&s>bs){bs=s;best=ic}
-        }
+        for(const ic of getCombinations(tr,r)){const s=r3(ic.reduce((a,idx)=>a+tr[idx],0));if(s<=esp&&s>bs){bs=s;best=ic}}
         if(bs>esp-0.001)break
       }
       if(best){fit.push(...best.map(idx=>tr[idx]));best.sort((a,b)=>b-a).forEach(idx=>tr.splice(idx,1));esp=r3(esp-bs);ch=true}
@@ -521,6 +513,7 @@ function optimizar(){
 
   const nRetazos=tubos.filter(t=>t.desp>=MIN_RETAZO).map(t=>r3(t.desp))
   const invFinal=[...invCopy.filter((_,i)=>!usedIdx.includes(i)),...nRetazos].filter(r=>r>=MIN_RETAZO).sort((a,b)=>b-a)
+  const todosCortes=tubos.flatMap(t=>t.cuts)
 
   const totalNuevos=tubos.filter(t=>!t.fi).length
   const totalMat=r3(totalNuevos*LONGITUD_TUBO+usedIdx.reduce((a,i)=>a+invCopy[i],0))
@@ -542,13 +535,10 @@ function optimizar(){
     const wp=t.desp<MIN_RETAZO?parseFloat(pct(t.desp)):0
     html+=`<div class="tube-card${t.fi?' fi':''}">
       <div class="tube-head">
-        <div class="tube-name">
-          ${t.fi?'<span class="badge blue">Retazo inventario</span>':'<span style="color:var(--text2)">Tubo '+(idx+1)+'</span>'}
-          <span style="font-size:11px;font-weight:400;color:var(--text3)">${t.rs.toFixed(3)} m</span>
-        </div>
+        <div class="tube-name">${t.fi?'<span class="badge blue">Retazo inventario</span>':'<span style="color:var(--text2)">Tubo '+(idx+1)+'</span>'}
+          <span style="font-size:11px;font-weight:400;color:var(--text3)">${t.rs.toFixed(3)} m</span></div>
         <div class="tube-meta">${t.usado.toFixed(3)} m usados<br>
-          <span style="color:${t.desp>=MIN_RETAZO?'var(--blue)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ retazo útil':'descarte'}</span>
-        </div>
+          <span style="color:${t.desp>=MIN_RETAZO?'var(--blue)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ retazo útil':'descarte'}</span></div>
       </div>
       <div class="tube-bar">
         <div class="seg used" style="width:${pct(t.usado)}%">${parseFloat(pct(t.usado))>8?t.usado.toFixed(2)+' m':''}</div>
@@ -562,35 +552,30 @@ function optimizar(){
   html+=`<div class="divider"></div><div class="section-title">Inventario para el próximo lote</div>
   <div class="card">
     <div style="margin-bottom:12px;">${invFinal.length?invFinal.map(r=>`<div class="ni-item keep"><span>${r.toFixed(3)} m</span><span class="badge green">pasa al inventario</span></div>`).join(''):'<div class="empty">Sin retazos útiles.</div>'}</div>
-    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado})'>✓ Guardar inventario y registrar lote</button>
+    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(todosCortes)})'>✓ Guardar inventario y registrar lote</button>
   </div>`
 
   document.getElementById('results').innerHTML=html
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})
 }
 
-async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados){
+async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,cortes){
   inventario=inv
   await Promise.all([
     persistInventario(inventario),
-    guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados)
+    guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,cortes)
   ])
   pedidos=[]
   renderPedidos()
   renderInventario()
-  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote registrado en el histórico. Inventario guardado.</div>'
+  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote registrado con '+(cortes?.length||0)+' cortes. Inventario guardado en la nube.</div>'
   window.scrollTo({top:0,behavior:'smooth'})
 }
 
 async function init(){
   const saved=localStorage.getItem(STORAGE_KEY)
   if(saved){
-    try{
-      const{url,key}=JSON.parse(saved)
-      document.getElementById('cfg-url').value=url
-      document.getElementById('cfg-key').value=key
-      await conectar()
-    }catch(e){}
+    try{const{url,key}=JSON.parse(saved);document.getElementById('cfg-url').value=url;document.getElementById('cfg-key').value=key;await conectar()}catch(e){}
   }
 }
 
