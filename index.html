@@ -39,13 +39,16 @@
   input[type=number],input[type=text],textarea,select{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
   input:focus,textarea:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15);}
   textarea{height:110px;resize:vertical;font-family:'Consolas',monospace;}
-  .row{display:flex;gap:8px;margin-bottom:8px;}.row input{flex:1;}
+  .row{display:flex;gap:8px;margin-bottom:8px;}.row input,.row select{flex:1;}
   button{cursor:pointer;font-family:inherit;font-size:13px;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);padding:8px 14px;transition:background 0.15s;}
   button:hover{background:var(--bg2);}button:active{transform:scale(0.98);}
   .btn-green{background:var(--green);color:white;border-color:transparent;font-weight:500;}.btn-green:hover{background:#178a64;}
   .btn-blue{background:var(--blue);color:white;border-color:transparent;font-weight:500;}.btn-blue:hover{background:#2a75c7;}
   .btn-red{background:var(--red);color:white;border-color:transparent;font-weight:500;}.btn-red:hover{background:#c43d3c;}
   .btn-run{width:100%;padding:12px;font-size:15px;font-weight:600;margin:16px 0;background:var(--green);color:white;border:none;border-radius:var(--r);}.btn-run:hover{background:#178a64;}
+  .linea-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;}
+  .linea-sheer{background:#FFF3E0;color:#E65100;}
+  .linea-enrollable{background:#E8F5E9;color:#1B5E20;}
   .hint{font-size:11px;color:var(--text3);margin:6px 0 10px;}
   .err{color:var(--red);font-size:12px;margin-top:4px;min-height:16px;}
   .cuts-wrap{display:flex;flex-wrap:wrap;gap:5px;max-height:120px;overflow-y:auto;}
@@ -53,7 +56,7 @@
   .pill.inv{background:var(--bl);color:var(--bt);border-color:transparent;}
   .inv-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg2);border-radius:var(--rs);margin-bottom:5px;font-size:13px;}
   .badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px;}
-  .badge.green{background:var(--gl);color:var(--gt);}.badge.blue{background:var(--bl);color:var(--bt);}.badge.red{background:var(--rl);color:var(--rt);}.badge.amber{background:var(--al);color:var(--at);}
+  .badge.green{background:var(--gl);color:var(--gt);}.badge.blue{background:var(--bl);color:var(--bt);}.badge.red{background:var(--rl);color:var(--rt);}
   .btn-sm{padding:2px 8px;font-size:11px;border-radius:4px;}
   .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 16px;}
   @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr;}}
@@ -73,7 +76,6 @@
   .empty{text-align:center;padding:24px;color:var(--text3);font-size:13px;}
   .divider{height:0.5px;background:var(--border);margin:20px 0;}
   .save-banner{background:var(--gl);color:var(--gt);border-radius:var(--r);padding:14px 18px;font-size:13px;font-weight:500;margin-top:16px;text-align:center;}
-  /* HISTORICO */
   .period-tabs{display:flex;gap:6px;margin-bottom:20px;}
   .period-tab{padding:6px 16px;border-radius:99px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-size:13px;cursor:pointer;}
   .period-tab.active{background:var(--green);color:white;border-color:transparent;}
@@ -93,19 +95,11 @@
   .lote-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
   .lote-body{display:none;border-top:0.5px solid var(--border);padding:14px 16px;background:var(--bg2);}
   .lote-body.open{display:block;}
-  .tubo-bloque{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;}
+  .tubo-bloque{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;}
   .tubo-bloque-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;font-weight:600;}
   .corte-item{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border-radius:var(--rs);margin-bottom:4px;font-size:13px;background:var(--bg2);}
   .aprov-pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:500;}
   .aprov-high{background:var(--gl);color:var(--gt);}.aprov-mid{background:var(--al);color:var(--at);}.aprov-low{background:var(--rl);color:var(--rt);}
-  /* REMITOS */
-  .remito-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;}
-  .remito-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;}
-  .remito-num{font-size:18px;font-weight:700;color:var(--green);}
-  .paquete-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:var(--rs);margin-bottom:6px;font-size:13px;border:0.5px solid var(--border);}
-  .paquete-item.nuevo{background:var(--gl);border-color:transparent;}
-  .paquete-item.retazo{background:var(--bl);border-color:transparent;}
-  .remito-footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);}
   .lote-selector{margin-bottom:20px;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;}
@@ -157,9 +151,15 @@
 <div class="page active" id="page-optimizador">
   <div class="two-col">
     <div class="card">
-      <div class="card-title">Pedidos del día — anchos de cortina (m)</div>
+      <div class="card-title">Pedidos del día</div>
+      <div class="row" style="margin-bottom:12px;">
+        <select id="linea-select">
+          <option value="SHEER">SHEER</option>
+          <option value="ENROLLABLE">ENROLLABLE</option>
+        </select>
+      </div>
       <div class="row">
-        <input type="number" id="single-input" placeholder="ej: 1.20" step="0.001" min="0.03" max="1.80"/>
+        <input type="number" id="single-input" placeholder="Ancho cortina (m)" step="0.001" min="0.03" max="1.80"/>
         <button class="btn-green" onclick="addSingle()">Agregar</button>
       </div>
       <div id="single-error" class="err"></div>
@@ -172,7 +172,7 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Inventario de retazos disponibles</div>
+      <div class="card-title">Inventario de retazos</div>
       <div id="inv-list"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
       <div class="hint" style="margin-top:8px;">Retazos ≥ 0.5 m guardados en la nube.</div>
       <button onclick="recargarInventario()" style="width:100%;margin-top:8px;font-size:12px;">↻ Recargar</button>
@@ -247,7 +247,7 @@ async function conectar(){
     inventario=data[0]?.retazos||[]
     document.getElementById('setup-banner').style.display='none'
     setSyncStatus('ok');renderInventario();renderPedidos()
-  }catch(e){errEl.textContent='Error: '+(e.message||'verificá la URL y la clave.');setSyncStatus('error')}
+  }catch(e){errEl.textContent='Error: '+(e.message||'verificá URL y clave.');setSyncStatus('error')}
 }
 
 async function recargarInventario(){
@@ -267,12 +267,12 @@ async function persistInventario(inv){
   }catch(e){setSyncStatus('error')}
 }
 
-async function guardarHistorial(tubosNuevos,retazosUsados,aprov,desp,usados,tubosDetalle){
+async function guardarHistorial(tubosNuevos,retazosUsados,aprov,desp,usados,tubosDetalle,linea){
   if(!sb)return
   const{data}=await sb.from('historial').insert({
     tubos_nuevos:tubosNuevos,retazos_usados:retazosUsados,
     aprovechamiento:parseFloat(aprov),metros_desperdicio:parseFloat(desp),
-    metros_usados:parseFloat(usados),cortes:tubosDetalle
+    metros_usados:parseFloat(usados),cortes:tubosDetalle,linea:linea
   }).select()
   return data?.[0]
 }
@@ -286,7 +286,7 @@ async function loadHistorico(){
 
 async function cargarSelectLotes(){
   if(!sb)return
-  const{data}=await sb.from('historial').select('id,fecha,tubos_nuevos,aprovechamiento').order('fecha',{ascending:false})
+  const{data}=await sb.from('historial').select('id,fecha,tubos_nuevos,aprovechamiento,linea').order('fecha',{ascending:false})
   if(!data)return
   historialData=data.length>0?data:historialData
   const sel=document.getElementById('lote-select')
@@ -295,7 +295,7 @@ async function cargarSelectLotes(){
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
     const op=document.createElement('option')
     op.value=row.id
-    op.textContent=`${fecha} — ${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''} — ${parseFloat(row.aprovechamiento).toFixed(1)}%`
+    op.textContent=`${fecha} — ${row.linea||'R8'} — ${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''} — ${parseFloat(row.aprovechamiento).toFixed(1)}%`
     sel.appendChild(op)
   })
 }
@@ -305,8 +305,7 @@ async function cargarLoteRemito(){
   if(!id){document.getElementById('remito-contenido').innerHTML='<div class="empty">Seleccioná un lote.</div>';return}
   const{data,error}=await sb.from('historial').select('*').eq('id',id).single()
   if(error||!data)return
-  loteActualRemito=data
-  renderRemito(data)
+  loteActualRemito=data;renderRemito(data)
 }
 
 function renderRemito(lote){
@@ -314,13 +313,17 @@ function renderRemito(lote){
   const tubos=lote.cortes||[]
   const ap=parseFloat(lote.aprovechamiento)
   const cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
+  const linea=lote.linea||'R8'
 
-  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
     <div>
-      <div style="font-size:16px;font-weight:600;">Remito de cortes</div>
+      <div style="font-size:16px;font-weight:600;">Orden de corte</div>
       <div style="font-size:12px;color:var(--text2);margin-top:2px;">${fecha}</div>
     </div>
-    <button class="btn-blue" onclick="generarPDF()">⬇ Descargar PDF</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="linea-badge linea-${linea.toLowerCase()}">${linea}</span>
+      <button class="btn-blue" onclick="generarPDF()">⬇ Descargar PDF</button>
+    </div>
   </div>
   <div class="metrics" style="margin-bottom:20px;">
     <div class="metric"><div class="ml">Tubos nuevos</div><div class="mv">${lote.tubos_nuevos}</div></div>
@@ -332,139 +335,107 @@ function renderRemito(lote){
   if(Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'){
     tubos.forEach((tubo,i)=>{
       const esNuevo=!tubo.fromInv
-      html+=`<div class="remito-card">
-        <div class="remito-header">
-          <div>
-            <div class="remito-num">Paquete ${i+1}</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:2px;">${tubo.rs.toFixed(3)} m total</div>
+      html+=`<div class="tube-card${esNuevo?'':' fi'}" style="margin-bottom:10px;">
+        <div class="tube-head">
+          <div class="tube-name">
+            <strong>Grupo ${i+1}</strong>
+            <span class="badge ${esNuevo?'green':'blue'}">${esNuevo?'Tubo nuevo':'Retazo '+tubo.rs.toFixed(3)+' m'}</span>
           </div>
-          <span class="badge ${esNuevo?'green':'blue'}">${esNuevo?'Tubo nuevo':'Retazo inventario '+tubo.rs.toFixed(3)+' m'}</span>
+          <div class="tube-meta">${tubo.cuts.length} corte${tubo.cuts.length!==1?'s':''} · usado: ${tubo.usado.toFixed(3)} m</div>
         </div>`
       tubo.cuts.forEach((c,ci)=>{
-        html+=`<div class="paquete-item ${esNuevo?'nuevo':'retazo'}">
-          <span><strong>Corte ${ci+1}</strong> — tubo ${c.toFixed(3)} m <span style="font-size:12px;color:var(--text2)">(ancho cortina: ${r3(c+0.03).toFixed(3)} m)</span></span>
+        html+=`<div class="corte-item">
+          <span style="color:var(--text3);font-size:12px;min-width:60px;">Corte ${ci+1}</span>
+          <strong style="font-size:15px;">${c.toFixed(3)} m</strong>
+          <span style="font-size:11px;color:var(--text3);min-width:80px;text-align:right;"></span>
         </div>`
       })
-      html+=`<div class="remito-footer">
-        <span style="font-size:12px;color:var(--text2)">Usado: ${tubo.usado.toFixed(3)} m</span>
-        <span style="font-size:12px;color:${tubo.desp>=MIN_RETAZO?'var(--blue)':'var(--text3)'}">
-          ${tubo.desp.toFixed(3)} m ${tubo.desp>=MIN_RETAZO?'→ retazo útil':'→ descarte'}</span>
-      </div></div>`
+      html+=`<div style="font-size:12px;color:${tubo.desp>=MIN_RETAZO?'var(--bt)':'var(--text3)'};margin-top:8px;padding:0 4px;">
+        Sobrante: ${tubo.desp.toFixed(3)} m ${tubo.desp>=MIN_RETAZO?'→ guardar en inventario':'→ descarte'}</div>
+      </div>`
     })
   }else{
-    html+='<div class="empty">Este lote fue guardado sin detalle por tubo. Los lotes nuevos sí incluirán esta información.</div>'
+    html+='<div class="empty">Este lote fue guardado sin detalle por grupo.</div>'
   }
 
   document.getElementById('remito-contenido').innerHTML=html
 }
 
 function generarPDF(){
-  if(!loteActualRemito){return}
-  const {jsPDF}=window.jspdf
+  if(!loteActualRemito)return
+  const{jsPDF}=window.jspdf
   const doc=new jsPDF({unit:'mm',format:'a4'})
   const lote=loteActualRemito
   const fecha=new Date(lote.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
   const tubos=lote.cortes||[]
   const ap=parseFloat(lote.aprovechamiento)
+  const linea=lote.linea||'R8'
   const lm=15,rm=195,w=180
 
-  // ── ENCABEZADO ──────────────────────────────────────────────
+  // ENCABEZADO
   doc.setFillColor(29,158,117)
-  doc.rect(0,0,210,22,'F')
+  doc.rect(0,0,210,20,'F')
   doc.setTextColor(255,255,255)
-  doc.setFontSize(15);doc.setFont('helvetica','bold')
-  doc.text('PANORAMA PERSIANAS',lm,10)
-  doc.setFontSize(10);doc.setFont('helvetica','normal')
-  doc.text('Orden de corte — Tubos R8',lm,16)
-  doc.setFontSize(9)
-  doc.text('Fecha: '+fecha,rm,10,{align:'right'})
-  doc.text('Lote #'+lote.id,rm,16,{align:'right'})
+  doc.setFontSize(13);doc.setFont('helvetica','bold')
+  doc.text('PANORAMA PERSIANAS',lm,9)
+  doc.setFontSize(9);doc.setFont('helvetica','normal')
+  doc.text('Orden de corte — Tubos R8 — '+linea,lm,15)
+  doc.text('Fecha: '+fecha+'   |   Aprovech: '+ap.toFixed(1)+'%   |   Tubos: '+lote.tubos_nuevos+'   |   Desp: '+parseFloat(lote.metros_desperdicio).toFixed(2)+' m',rm,9,{align:'right'})
+  doc.text('Lote #'+lote.id,rm,15,{align:'right'})
 
-  // ── RESUMEN DEL LOTE ────────────────────────────────────────
-  let y=28
-  doc.setFillColor(245,245,243)
-  doc.rect(lm,y,w,10,'F')
-  doc.setTextColor(80,80,80);doc.setFontSize(8.5);doc.setFont('helvetica','normal')
-  const resumen='Tubos nuevos: '+lote.tubos_nuevos+'     Retazos usados: '+lote.retazos_usados+'     Aprovechamiento: '+ap.toFixed(1)+'%     Desperdicio: '+parseFloat(lote.metros_desperdicio).toFixed(2)+' m'
-  doc.text(resumen,lm+3,y+6.5)
-  y+=14
+  let y=26
+  const altoGrupo=6    // cabecera del grupo
+  const altoCorte=6    // cada corte
+  const altoSob=5      // sobrante
+  const gap=3          // espacio entre grupos
 
-  // ── TUBOS ───────────────────────────────────────────────────
   if(Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'){
     tubos.forEach((tubo,i)=>{
       const esNuevo=!tubo.fromInv
-      const altoCabecera=10
-      const altoCorte=12
-      const altoFooter=8
-      const altoBloque=altoCabecera+(tubo.cuts.length*altoCorte)+altoFooter+4
+      const altoBloque=altoGrupo+(tubo.cuts.length*altoCorte)+altoSob+gap
 
       if(y+altoBloque>287){doc.addPage();y=15}
 
-      // Cabecera del paquete
-      doc.setFillColor(esNuevo?29:55,esNuevo?158:138,esNuevo?117:221)
-      doc.rect(lm,y,w,altoCabecera,'F')
-      doc.setTextColor(255,255,255)
-      doc.setFont('helvetica','bold');doc.setFontSize(11)
-      doc.text('PAQUETE '+(i+1),lm+4,y+7)
-      doc.setFont('helvetica','normal');doc.setFontSize(9)
-      const tipoPaquete=esNuevo?'Tubo nuevo — 5.980 m':'Retazo de inventario — '+tubo.rs.toFixed(3)+' m'
-      doc.text(tipoPaquete,lm+40,y+7)
-      y+=altoCabecera
+      // Cabecera grupo — fondo de color
+      doc.setFillColor(esNuevo?235:225,esNuevo?248:238,esNuevo?242:252)
+      doc.rect(lm,y,w,altoGrupo,'F')
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(30,30,30)
+      doc.text('GRUPO '+(i+1),lm+3,y+4.3)
+      doc.setFont('helvetica','normal');doc.setFontSize(8)
+      doc.setTextColor(esNuevo?8:12,esNuevo?100:68,esNuevo?65:124)
+      doc.text(esNuevo?'Tubo nuevo — 5.980 m':'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
+      y+=altoGrupo
 
-      // Cortes — grande y legible para el cortador
+      // Cortes
       tubo.cuts.forEach((c,ci)=>{
-        const bgR=ci%2===0?252:245,bgG=ci%2===0?252:252,bgB=ci%2===0?252:250
-        doc.setFillColor(bgR,bgG,bgB)
+        doc.setFillColor(ci%2===0?252:246,ci%2===0?252:246,ci%2===0?252:246)
         doc.rect(lm,y,w,altoCorte,'F')
-
-        // Número de orden (grande)
-        doc.setFillColor(esNuevo?29:55,esNuevo?158:138,esNuevo?117:221)
-        doc.circle(lm+7,y+altoCorte/2,4,'F')
-        doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(8)
-        doc.text(String(ci+1),lm+7,y+altoCorte/2+0.5,{align:'center'})
-
-        // Medida principal — MUY GRANDE
-        doc.setTextColor(15,15,15);doc.setFont('helvetica','bold');doc.setFontSize(18)
-        doc.text(c.toFixed(3)+' m',lm+16,y+altoCorte-2.5)
-
-        // Checkboxes para el cortador
-        doc.setDrawColor(180,180,180);doc.setLineWidth(0.3)
-        const chkX=rm-30
-        doc.rect(chkX,y+2,5,5)
-        doc.rect(chkX+9,y+2,5,5)
-        doc.setTextColor(140,140,140);doc.setFont('helvetica','normal');doc.setFontSize(7)
-        doc.text('Cortado',chkX+0.5,y+10.5)
-        doc.text('Verificado',chkX+9,y+10.5)
-
-        doc.setTextColor(15,15,15)
+        doc.setTextColor(120,120,120);doc.setFont('helvetica','normal');doc.setFontSize(8)
+        doc.text('  '+(ci+1)+'.',lm+2,y+4.2)
+        doc.setTextColor(15,15,15);doc.setFont('helvetica','bold');doc.setFontSize(11)
+        doc.text(c.toFixed(3)+' m',lm+12,y+4.5)
         y+=altoCorte
       })
 
-      // Footer del tubo
-      doc.setFillColor(esNuevo?225:220,esNuevo?245:235,esNuevo?237:250)
-      doc.rect(lm,y,w,altoFooter,'F')
-      doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(90,90,90)
-      const sobrante=tubo.desp>=MIN_RETAZO
-        ?'Sobrante: '+tubo.desp.toFixed(3)+' m → GUARDAR en inventario'
-        :'Sobrante: '+tubo.desp.toFixed(3)+' m → descarte'
-      doc.text(sobrante,lm+3,y+5.5)
-      doc.setTextColor(90,90,90)
-      doc.text('Usado: '+tubo.usado.toFixed(3)+' m',rm-3,y+5.5,{align:'right'})
-      y+=altoFooter+5
-
-      doc.setDrawColor(210,210,210);doc.setLineWidth(0.3);doc.line(lm,y-2,rm,y-2)
+      // Sobrante
+      doc.setFillColor(tubo.desp>=MIN_RETAZO?230:245,tubo.desp>=MIN_RETAZO?240:245,tubo.desp>=MIN_RETAZO?252:245)
+      doc.rect(lm,y,w,altoSob,'F')
+      doc.setFont('helvetica','italic');doc.setFontSize(7.5)
+      doc.setTextColor(tubo.desp>=MIN_RETAZO?12:130,tubo.desp>=MIN_RETAZO?68:130,tubo.desp>=MIN_RETAZO?124:130)
+      doc.text('  Sobrante: '+tubo.desp.toFixed(3)+' m'+(tubo.desp>=MIN_RETAZO?' → GUARDAR en inventario':' → descarte'),lm+2,y+3.5)
+      y+=altoSob+gap
     })
   }else{
     doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(150,150,150)
-    doc.text('Lote sin detalle por tubo disponible.',lm,y);y+=8
+    doc.text('Lote sin detalle por grupo.',lm,y)
   }
 
-  // Footer página
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(160,160,160)
-  doc.text('Generado por Optimizador Tubos R8 — Panorama Persianas',lm,290)
+  // Footer
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(180,180,180)
+  doc.text('Generado por Optimizador Tubos R8 — Panorama Persianas',lm,292)
 
   const fechaArchivo=new Date(lote.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-')
-  doc.save('remito-cortes-'+fechaArchivo+'.pdf')
+  doc.save('orden-corte-'+linea.toLowerCase()+'-'+fechaArchivo+'.pdf')
 }
 
 function groupBy(data,period){
@@ -482,20 +453,16 @@ function groupBy(data,period){
 }
 
 function renderHistorico(data){
-  const grouped=groupBy(data,currentPeriod)
-  const labels=grouped.map(g=>g.label)
+  const grouped=groupBy(data,currentPeriod),labels=grouped.map(g=>g.label)
   const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches
   const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)',tc=isDark?'#a0a09a':'#6b6b67'
   const bo={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11}}}}}
-
   const totalLotes=data.length,avgAprov=r2(data.reduce((a,b)=>a+parseFloat(b.aprovechamiento),0)/Math.max(data.length,1))
   const totalTubos=data.reduce((a,b)=>a+b.tubos_nuevos,0),totalDesp=r2(data.reduce((a,b)=>a+parseFloat(b.metros_desperdicio),0))
-
   document.getElementById('hist-metrics').innerHTML=`
     <div class="hm"><div class="hml">Lotes procesados</div><div class="hmv">${totalLotes}</div><div class="hms">total histórico</div></div>
     <div class="hm"><div class="hml">Aprovechamiento promedio</div><div class="hmv">${avgAprov}%</div><div class="hms">todos los lotes</div></div>
     <div class="hm"><div class="hml">Tubos totales</div><div class="hmv">${totalTubos}</div><div class="hms">${totalDesp} m desperdiciados</div></div>`
-
   if(chartAprov)chartAprov.destroy();if(chartTubos)chartTubos.destroy();if(chartDesp)chartDesp.destroy()
   chartAprov=new Chart(document.getElementById('chart-aprov'),{type:'line',data:{labels,datasets:[{data:grouped.map(g=>g.aprov),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,fill:true,pointRadius:4,pointBackgroundColor:'#1D9E75'}]},options:{...bo,scales:{...bo.scales,y:{...bo.scales.y,min:0,max:100,ticks:{...bo.scales.y.ticks,callback:v=>v+'%'}}}}})
   chartTubos=new Chart(document.getElementById('chart-tubos'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.tubos),backgroundColor:'rgba(55,138,221,0.7)',borderColor:'#378ADD',borderWidth:1,borderRadius:4}]},options:{...bo}})
@@ -507,14 +474,16 @@ function renderHistorico(data){
     const ap=parseFloat(row.aprovechamiento),cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
     const tubos=row.cortes||[]
+    const linea=row.linea||'R8'
     const cantCortes=Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'?tubos.reduce((a,t)=>a+(t.cuts?.length||0),0):tubos.length
     html+=`<div class="lote-row" id="lote-${row.id}">
       <div class="lote-header" onclick="toggleLote(${row.id})">
         <div class="lote-info">
           <span style="font-size:13px;font-weight:500;">${fecha}</span>
+          <span class="linea-badge linea-${linea.toLowerCase()}">${linea}</span>
           <span class="badge blue">${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''}</span>
           <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
-          <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(2)} m desperdicio</span>
+          <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(2)} m desp.</span>
           <span style="font-size:12px;color:var(--text3)">${cantCortes} corte${cantCortes!==1?'s':''}</span>
         </div>
         <div class="lote-actions" onclick="event.stopPropagation()">
@@ -522,9 +491,7 @@ function renderHistorico(data){
           <span style="color:var(--text3);font-size:16px;">›</span>
         </div>
       </div>
-      <div class="lote-body" id="body-${row.id}">
-        ${renderTubosDetalle(tubos,row.id)}
-      </div>
+      <div class="lote-body" id="body-${row.id}">${renderTubosDetalle(tubos,row.id)}</div>
     </div>`
   })
   document.getElementById('hist-lotes').innerHTML=html||'<div class="empty">Sin lotes registrados.</div>'
@@ -532,16 +499,18 @@ function renderHistorico(data){
 
 function renderTubosDetalle(tubos,loteId){
   if(!tubos||tubos.length===0)return'<div class="empty">Sin detalle disponible.</div>'
-  if(typeof tubos[0]!=='object')return'<div class="empty">Lote antiguo sin detalle por tubo.</div>'
+  if(typeof tubos[0]!=='object')return'<div class="empty">Lote antiguo sin detalle por grupo.</div>'
   return tubos.map((tubo,ti)=>`
     <div class="tubo-bloque">
       <div class="tubo-bloque-header">
-        <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo inventario '+tubo.rs.toFixed(3)+' m':'Tubo nuevo'}</span>
-        <span style="font-size:12px;font-weight:400;color:var(--text2)">Usado: ${tubo.usado.toFixed(3)} m — ${tubo.desp>=MIN_RETAZO?'retazo útil '+tubo.desp.toFixed(3)+' m':'descarte '+tubo.desp.toFixed(3)+' m'}</span>
+        <span>Grupo ${ti+1}</span>
+        <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo '+tubo.rs.toFixed(3)+' m':'Tubo nuevo'}</span>
+        <span style="font-size:12px;font-weight:400;color:var(--text2)">${tubo.desp>=MIN_RETAZO?'Sobrante '+tubo.desp.toFixed(3)+' m → inventario':'Descarte '+tubo.desp.toFixed(3)+' m'}</span>
       </div>
       ${tubo.cuts.map((c,ci)=>`
         <div class="corte-item">
-          <span>Corte ${ci+1} — <strong>${c.toFixed(3)} m</strong> <span style="color:var(--text3);font-size:12px;">(ancho: ${r3(c+0.03).toFixed(3)} m)</span></span>
+          <span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span>
+          <strong>${c.toFixed(3)} m</strong>
           <button class="btn-sm btn-red" onclick="eliminarCorte(${loteId},${ti},${ci})">×</button>
         </div>`).join('')}
     </div>`).join('')
@@ -559,7 +528,7 @@ async function eliminarCorte(loteId,tuboIdx,corteIdx){
   const lote=historialData.find(r=>r.id===loteId);if(!lote)return
   const tubos=JSON.parse(JSON.stringify(lote.cortes))
   const c=tubos[tuboIdx].cuts[corteIdx]
-  confirmar('Eliminar corte',`¿Eliminar corte ${c.toFixed(3)} m (ancho: ${r3(c+0.03).toFixed(3)} m)?`,async()=>{
+  confirmar('Eliminar corte',`¿Eliminar corte ${c.toFixed(3)} m?`,async()=>{
     tubos[tuboIdx].cuts.splice(corteIdx,1)
     if(tubos[tuboIdx].cuts.length===0)tubos.splice(tuboIdx,1)
     await sb.from('historial').update({cortes:tubos}).eq('id',loteId)
@@ -571,8 +540,9 @@ function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab'
 
 function renderPedidos(){
   const s=document.getElementById('pedidos-summary'),l=document.getElementById('pedidos-list')
+  const linea=document.getElementById('linea-select').value
   if(!pedidos.length){s.textContent='';l.innerHTML='<span style="font-size:12px;color:var(--text3)">Sin pedidos cargados</span>';return}
-  s.textContent=pedidos.length+' cortes · suma: '+r2(pedidos.reduce((a,b)=>a+b,0))+' m'
+  s.innerHTML=pedidos.length+' cortes · suma: '+r2(pedidos.reduce((a,b)=>a+b,0))+' m · <span class="linea-badge linea-'+linea.toLowerCase()+'" style="font-size:11px;padding:2px 8px;">'+linea+'</span>'
   l.innerHTML=[...pedidos].sort((a,b)=>b-a).map(c=>`<span class="pill">${c.toFixed(3)}</span>`).join('')
 }
 
@@ -598,7 +568,10 @@ function addSingle(){
   err.textContent='';pedidos.push(c);inp.value='';inp.focus();renderPedidos()
 }
 
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('single-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSingle()})})
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('single-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSingle()})
+  document.getElementById('linea-select').addEventListener('change',renderPedidos)
+})
 
 function addBulk(){
   const raw=document.getElementById('bulk-input').value
@@ -634,6 +607,7 @@ function greedyPack(cuts,len){
 
 function optimizar(){
   if(!pedidos.length){document.getElementById('results').innerHTML='<div class="empty">Cargá los pedidos primero.</div>';return}
+  const linea=document.getElementById('linea-select').value
   const usedIdx=[],tubos=[]
   const invCopy=[...inventario].sort((a,b)=>b-a)
   let rem=[...pedidos].sort((a,b)=>b-a)
@@ -658,7 +632,6 @@ function optimizar(){
 
   const nRetazos=tubos.filter(t=>t.desp>=MIN_RETAZO).map(t=>r3(t.desp))
   const invFinal=[...invCopy.filter((_,i)=>!usedIdx.includes(i)),...nRetazos].filter(r=>r>=MIN_RETAZO).sort((a,b)=>b-a)
-
   const totalNuevos=tubos.filter(t=>!t.fromInv).length
   const totalMat=r3(totalNuevos*LONGITUD_TUBO+usedIdx.reduce((a,i)=>a+invCopy[i],0))
   const totalUsado=r3(pedidos.reduce((a,b)=>a+b,0))
@@ -671,17 +644,19 @@ function optimizar(){
     <div class="metric"><div class="ml">Retazos usados</div><div class="mv">${usedIdx.length}</div><div class="ms">del inventario</div></div>
     <div class="metric"><div class="ml">Aprovechamiento</div><div class="mv">${aprov}%</div><div class="ms">sobre material total</div></div>
     <div class="metric"><div class="ml">Retazos generados</div><div class="mv">${retGen}</div><div class="ms">≥ 0.5 m → inventario</div></div>
-  </div><div class="divider"></div><div class="section-title">Distribución por tubo</div>`
+  </div><div class="divider"></div>
+  <div class="section-title">Distribución por grupo <span class="linea-badge linea-${linea.toLowerCase()}" style="font-size:11px;padding:2px 10px;margin-left:6px;">${linea}</span></div>`
 
   tubos.forEach((t,idx)=>{
     const pct=v=>((v/t.rs)*100).toFixed(1)
     const rp=t.desp>=MIN_RETAZO?parseFloat(pct(t.desp)):0,wp=t.desp<MIN_RETAZO?parseFloat(pct(t.desp)):0
     html+=`<div class="tube-card${t.fromInv?' fi':''}">
       <div class="tube-head">
-        <div class="tube-name">${t.fromInv?'<span class="badge blue">Retazo inventario '+t.rs.toFixed(3)+' m</span>':'<span style="color:var(--text2)">Paquete '+(idx+1)+'</span>'}
-          <span style="font-size:11px;font-weight:400;color:var(--text3)">${t.rs.toFixed(3)} m</span></div>
-        <div class="tube-meta">${t.usado.toFixed(3)} m usados<br>
-          <span style="color:${t.desp>=MIN_RETAZO?'var(--blue)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ retazo útil':'descarte'}</span></div>
+        <div class="tube-name">
+          <strong>Grupo ${idx+1}</strong>
+          ${t.fromInv?'<span class="badge blue">Retazo '+t.rs.toFixed(3)+' m</span>':'<span class="badge green">Tubo nuevo</span>'}
+        </div>
+        <div class="tube-meta">${t.usado.toFixed(3)} m usados · <span style="color:${t.desp>=MIN_RETAZO?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ inventario':'→ descarte'}</span></div>
       </div>
       <div class="tube-bar">
         <div class="seg used" style="width:${pct(t.usado)}%">${parseFloat(pct(t.usado))>8?t.usado.toFixed(2)+' m':''}</div>
@@ -695,18 +670,18 @@ function optimizar(){
   html+=`<div class="divider"></div><div class="section-title">Inventario para el próximo lote</div>
   <div class="card">
     <div style="margin-bottom:12px;">${invFinal.length?invFinal.map(r=>`<div class="ni-item keep"><span>${r.toFixed(3)} m</span><span class="badge green">pasa al inventario</span></div>`).join(''):'<div class="empty">Sin retazos útiles.</div>'}</div>
-    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(tubos)})'>✓ Guardar inventario y registrar lote</button>
+    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(tubos)},"${linea}")'>✓ Guardar inventario y registrar lote</button>
   </div>`
 
   document.getElementById('results').innerHTML=html
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})
 }
 
-async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle){
+async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle,linea){
   inventario=inv
-  await Promise.all([persistInventario(inventario),guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle)])
+  await Promise.all([persistInventario(inventario),guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle,linea)])
   pedidos=[];renderPedidos();renderInventario()
-  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote registrado. Podés descargarlo como PDF en la pestaña <strong>Remitos PDF</strong>.</div>'
+  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote <strong>'+linea+'</strong> registrado. Descargalo como PDF en la pestaña <strong>Remitos PDF</strong>.</div>'
   window.scrollTo({top:0,behavior:'smooth'})
 }
 
