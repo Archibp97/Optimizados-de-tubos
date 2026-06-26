@@ -3,31 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OPTIMIZADOR DE CORTE - TUBO R8 — PERSIANAS PANORAMA </title>
+<title>Optimizador Tubos R8 — Panorama Persianas</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
   :root{--bg:#fff;--bg2:#f5f5f4;--bg3:#efefed;--text:#1c1c1a;--text2:#6b6b67;--text3:#9b9b96;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.25);--green:#1D9E75;--gl:#E1F5EE;--gt:#085041;--blue:#378ADD;--bl:#E6F1FB;--bt:#0C447C;--red:#E24B4A;--rl:#FCEBEB;--rt:#791F1F;--amber:#BA7517;--al:#FAEEDA;--at:#633806;--r:10px;--rs:6px;}
   @media(prefers-color-scheme:dark){:root{--bg:#1e1e1c;--bg2:#2a2a28;--bg3:#323230;--text:#f0ede8;--text2:#a0a09a;--text3:#6b6b65;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.22);--gl:#04342C;--gt:#9FE1CB;--bl:#042C53;--bt:#B5D4F4;--rl:#501313;--rt:#F7C1C1;--al:#412402;--at:#FAC775;}}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5;}
-  .titlebar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+  .titlebar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;flex-wrap:wrap;}
   .ticon{width:28px;height:28px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;}
   .ticon svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;}
   .titlebar h1{font-size:15px;font-weight:600;}
-  .titlebar span{font-size:12px;color:var(--text3);}
   .nav-tabs{margin-left:auto;display:flex;gap:4px;}
   .nav-tab{padding:6px 14px;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-size:13px;cursor:pointer;}
   .nav-tab.active{background:var(--green);color:white;border-color:transparent;}
   .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;}
-  .sync-dot.ok{background:var(--green);}
-  .sync-dot.error{background:var(--red);}
+  .sync-dot.ok{background:var(--green);}.sync-dot.error{background:var(--red);}
   .inv-badge{background:var(--bl);color:var(--bt);font-size:12px;font-weight:500;padding:4px 12px;border-radius:99px;}
   .setup-banner{background:var(--bg);border:1.5px solid var(--blue);border-radius:var(--r);padding:20px 24px;margin:24px auto;max-width:1060px;}
   .setup-banner h2{font-size:15px;font-weight:600;margin-bottom:12px;}
   .step{display:flex;gap:12px;align-items:flex-start;font-size:13px;margin-bottom:10px;}
   .step-num{width:22px;height:22px;border-radius:50%;background:var(--blue);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-  .step code{background:var(--bg2);padding:1px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:11px;}
   .cfg-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
   .cfg-inputs input{padding:9px 12px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:13px;font-family:'Consolas',monospace;width:100%;}
   .btn-connect{margin-top:10px;width:100%;padding:10px;background:var(--blue);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;}
@@ -38,20 +36,16 @@
   @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
   .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:16px 18px;}
   .card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
-  input[type=number],textarea{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
-  input[type=number]:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15);}
+  input[type=number],input[type=text],textarea,select{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
+  input:focus,textarea:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15);}
   textarea{height:110px;resize:vertical;font-family:'Consolas',monospace;}
-  .row{display:flex;gap:8px;margin-bottom:8px;}
-  .row input{flex:1;}
+  .row{display:flex;gap:8px;margin-bottom:8px;}.row input{flex:1;}
   button{cursor:pointer;font-family:inherit;font-size:13px;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);padding:8px 14px;transition:background 0.15s;}
-  button:hover{background:var(--bg2);}
-  button:active{transform:scale(0.98);}
-  .btn-green{background:var(--green);color:white;border-color:transparent;font-weight:500;}
-  .btn-green:hover{background:#178a64;}
-  .btn-red{background:var(--red);color:white;border-color:transparent;font-weight:500;}
-  .btn-red:hover{background:#c43d3c;}
-  .btn-run{width:100%;padding:12px;font-size:15px;font-weight:600;margin:16px 0;background:var(--green);color:white;border:none;border-radius:var(--r);}
-  .btn-run:hover{background:#178a64;}
+  button:hover{background:var(--bg2);}button:active{transform:scale(0.98);}
+  .btn-green{background:var(--green);color:white;border-color:transparent;font-weight:500;}.btn-green:hover{background:#178a64;}
+  .btn-blue{background:var(--blue);color:white;border-color:transparent;font-weight:500;}.btn-blue:hover{background:#2a75c7;}
+  .btn-red{background:var(--red);color:white;border-color:transparent;font-weight:500;}.btn-red:hover{background:#c43d3c;}
+  .btn-run{width:100%;padding:12px;font-size:15px;font-weight:600;margin:16px 0;background:var(--green);color:white;border:none;border-radius:var(--r);}.btn-run:hover{background:#178a64;}
   .hint{font-size:11px;color:var(--text3);margin:6px 0 10px;}
   .err{color:var(--red);font-size:12px;margin-top:4px;min-height:16px;}
   .cuts-wrap{display:flex;flex-wrap:wrap;gap:5px;max-height:120px;overflow-y:auto;}
@@ -59,16 +53,12 @@
   .pill.inv{background:var(--bl);color:var(--bt);border-color:transparent;}
   .inv-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg2);border-radius:var(--rs);margin-bottom:5px;font-size:13px;}
   .badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px;}
-  .badge.green{background:var(--gl);color:var(--gt);}
-  .badge.blue{background:var(--bl);color:var(--bt);}
-  .badge.red{background:var(--rl);color:var(--rt);}
+  .badge.green{background:var(--gl);color:var(--gt);}.badge.blue{background:var(--bl);color:var(--bt);}.badge.red{background:var(--rl);color:var(--rt);}.badge.amber{background:var(--al);color:var(--at);}
   .btn-sm{padding:2px 8px;font-size:11px;border-radius:4px;}
   .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 16px;}
   @media(max-width:700px){.metrics{grid-template-columns:1fr 1fr;}}
   .metric{background:var(--bg2);border-radius:var(--rs);padding:12px 14px;}
-  .metric .ml{font-size:11px;color:var(--text2);margin-bottom:3px;}
-  .metric .mv{font-size:22px;font-weight:600;}
-  .metric .ms{font-size:11px;color:var(--text3);margin-top:1px;}
+  .metric .ml{font-size:11px;color:var(--text2);margin-bottom:3px;}.metric .mv{font-size:22px;font-weight:600;}.metric .ms{font-size:11px;color:var(--text3);margin-top:1px;}
   .section-title{font-size:14px;font-weight:600;margin:20px 0 10px;}
   .tube-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;}
   .tube-card.fi{border-left:3px solid var(--blue);}
@@ -77,9 +67,7 @@
   .tube-meta{font-size:12px;color:var(--text2);text-align:right;}
   .tube-bar{height:30px;background:var(--bg3);border-radius:5px;overflow:hidden;display:flex;margin-bottom:10px;}
   .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;overflow:hidden;white-space:nowrap;}
-  .seg.used{background:var(--green);color:white;}
-  .seg.ret{background:var(--blue);color:white;}
-  .seg.waste{background:var(--bg3);border-left:1px dashed var(--border2);color:var(--text3);}
+  .seg.used{background:var(--green);color:white;}.seg.ret{background:var(--blue);color:white;}.seg.waste{background:var(--bg3);border-left:1px dashed var(--border2);color:var(--text3);}
   .ni-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:var(--rs);font-size:13px;margin-bottom:4px;}
   .ni-item.keep{background:var(--gl);color:var(--gt);}
   .empty{text-align:center;padding:24px;color:var(--text3);font-size:13px;}
@@ -97,32 +85,35 @@
   .chart-wrap{position:relative;height:200px;}
   .hist-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
   .hm{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;}
-  .hm .hml{font-size:11px;color:var(--text2);margin-bottom:4px;}
-  .hm .hmv{font-size:24px;font-weight:600;}
-  .hm .hms{font-size:11px;color:var(--text3);margin-top:2px;}
-  /* TABLA HISTORICO */
+  .hm .hml{font-size:11px;color:var(--text2);margin-bottom:4px;}.hm .hmv{font-size:24px;font-weight:600;}.hm .hms{font-size:11px;color:var(--text3);margin-top:2px;}
   .lote-row{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;}
   .lote-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;gap:12px;}
   .lote-header:hover{background:var(--bg2);}
-  .lote-info{display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap;}
-  .lote-fecha{font-size:13px;font-weight:500;}
+  .lote-info{display:flex;align-items:center;gap:10px;flex:1;flex-wrap:wrap;}
   .lote-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
   .lote-body{display:none;border-top:0.5px solid var(--border);padding:14px 16px;background:var(--bg2);}
   .lote-body.open{display:block;}
-  .corte-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg);border-radius:var(--rs);margin-bottom:5px;font-size:13px;}
+  .tubo-bloque{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;}
+  .tubo-bloque-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;font-weight:600;}
+  .corte-item{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border-radius:var(--rs);margin-bottom:4px;font-size:13px;background:var(--bg2);}
   .aprov-pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:500;}
-  .aprov-high{background:var(--gl);color:var(--gt);}
-  .aprov-mid{background:var(--al);color:var(--at);}
-  .aprov-low{background:var(--rl);color:var(--rt);}
+  .aprov-high{background:var(--gl);color:var(--gt);}.aprov-mid{background:var(--al);color:var(--at);}.aprov-low{background:var(--rl);color:var(--rt);}
+  /* REMITOS */
+  .remito-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;}
+  .remito-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;}
+  .remito-num{font-size:18px;font-weight:700;color:var(--green);}
+  .paquete-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:var(--rs);margin-bottom:6px;font-size:13px;border:0.5px solid var(--border);}
+  .paquete-item.nuevo{background:var(--gl);border-color:transparent;}
+  .paquete-item.retazo{background:var(--bl);border-color:transparent;}
+  .remito-footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);}
+  .lote-selector{margin-bottom:20px;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;}
   .loading{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:13px;padding:16px 0;}
-  /* MODAL CONFIRMACION */
   .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
   .modal-overlay.open{display:flex;}
   .modal{background:var(--bg);border-radius:var(--r);padding:24px;max-width:400px;width:90%;}
-  .modal h3{font-size:16px;font-weight:600;margin-bottom:8px;}
-  .modal p{font-size:13px;color:var(--text2);margin-bottom:20px;}
+  .modal h3{font-size:16px;font-weight:600;margin-bottom:8px;}.modal p{font-size:13px;color:var(--text2);margin-bottom:20px;}
   .modal-btns{display:flex;gap:8px;justify-content:flex-end;}
 </style>
 </head>
@@ -131,10 +122,10 @@
 <div class="titlebar">
   <div class="ticon"><svg viewBox="0 0 24 24"><path d="M6 3L3 9l9 3 9-3-3-6H6z"/><path d="M3 9l9 13 9-13"/></svg></div>
   <h1>Optimizador Tubos R8</h1>
-  <span>Panorama Persianas</span>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('optimizador',this)">Optimizador</button>
     <button class="nav-tab" onclick="showPage('historico',this)">Histórico</button>
+    <button class="nav-tab" onclick="showPage('remitos',this)">Remitos PDF</button>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:12px;">
     <div class="sync-dot" id="sync-dot"></div>
@@ -142,22 +133,17 @@
   </div>
 </div>
 
-<!-- MODAL CONFIRMACION -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h3 id="modal-title">Confirmar</h3>
-    <p id="modal-msg"></p>
-    <div class="modal-btns">
-      <button onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-red" id="modal-confirm">Eliminar</button>
-    </div>
+    <h3 id="modal-title">Confirmar</h3><p id="modal-msg"></p>
+    <div class="modal-btns"><button onclick="cerrarModal()">Cancelar</button><button class="btn-red" id="modal-confirm">Eliminar</button></div>
   </div>
 </div>
 
 <div class="setup-banner" id="setup-banner">
   <h2>⚙️ Configuración inicial</h2>
   <div class="step"><div class="step-num">1</div><div>Creá cuenta en <a href="https://supabase.com" target="_blank" style="color:var(--blue)">supabase.com</a> → nuevo proyecto</div></div>
-  <div class="step"><div class="step-num">2</div><div>En SQL Editor ejecutá las tablas de inventario e historial (ver README)</div></div>
+  <div class="step"><div class="step-num">2</div><div>En SQL Editor ejecutá las tablas de inventario e historial</div></div>
   <div class="step"><div class="step-num">3</div><div>En <b>Project Settings → API</b> copiá la <b>Project URL</b> y la clave <b>anon public</b></div></div>
   <div class="cfg-inputs">
     <input type="text" id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co"/>
@@ -179,10 +165,7 @@
       <div id="single-error" class="err"></div>
       <div class="hint">O pegá varios anchos separados por coma, espacio o salto de línea:</div>
       <textarea id="bulk-input" placeholder="1.20, 0.85, 1.55, 1.10&#10;0.70, 1.40, 0.95"></textarea>
-      <div class="row" style="margin-top:8px;">
-        <button onclick="addBulk()" style="flex:1;">Cargar lista</button>
-        <button onclick="clearPedidos()">Limpiar</button>
-      </div>
+      <div class="row" style="margin-top:8px;"><button onclick="addBulk()" style="flex:1;">Cargar lista</button><button onclick="clearPedidos()">Limpiar</button></div>
       <div style="margin-top:12px;">
         <div id="pedidos-summary" style="font-size:12px;color:var(--text2);margin-bottom:8px;"></div>
         <div id="pedidos-list" class="cuts-wrap"></div>
@@ -206,25 +189,32 @@
     <button class="period-tab" onclick="setPeriod('semana',this)">Por semana</button>
     <button class="period-tab" onclick="setPeriod('mes',this)">Por mes</button>
   </div>
-  <div id="hist-metrics" class="hist-metrics">
-    <div class="loading"><div class="spinner"></div>Cargando...</div>
-  </div>
+  <div id="hist-metrics" class="hist-metrics"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
   <div class="charts-grid">
     <div class="chart-card full"><div class="chart-title">% aprovechamiento</div><div class="chart-wrap"><canvas id="chart-aprov"></canvas></div></div>
     <div class="chart-card"><div class="chart-title">Tubos usados</div><div class="chart-wrap"><canvas id="chart-tubos"></canvas></div></div>
     <div class="chart-card"><div class="chart-title">Metros de desperdicio</div><div class="chart-wrap"><canvas id="chart-desp"></canvas></div></div>
   </div>
-  <div class="card">
-    <div class="card-title">Detalle de lotes</div>
-    <div id="hist-lotes"></div>
+  <div class="card"><div class="card-title">Detalle de lotes</div><div id="hist-lotes"></div></div>
+</div>
+
+<!-- REMITOS PDF -->
+<div class="page" id="page-remitos">
+  <div class="card lote-selector">
+    <div class="card-title">Seleccionar lote</div>
+    <div class="row">
+      <select id="lote-select" style="flex:1;"><option value="">-- Seleccioná un lote --</option></select>
+      <button onclick="cargarLoteRemito()">Cargar</button>
+    </div>
   </div>
+  <div id="remito-contenido"><div class="empty">Seleccioná un lote para ver el remito.</div></div>
 </div>
 
 <script>
 const LONGITUD_TUBO=5.98,MIN_RETAZO=0.5,MAX_CORTE=1.77,STORAGE_KEY='supabase_config'
 let sb=null,inventario=[],pedidos=[],currentPeriod='dia'
-let chartAprov=null,chartTubos=null,chartDesp=null
-let historialData=[]
+let chartAprov=null,chartTubos=null,chartDesp=null,historialData=[]
+let loteActualRemito=null
 
 function r3(n){return Math.round(n*1000)/1000}
 function r2(n){return Math.round(n*100)/100}
@@ -234,31 +224,21 @@ function showPage(p,el){
   document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'))
   document.getElementById('page-'+p).classList.add('active')
   el.classList.add('active')
-  if(p==='historico') loadHistorico()
+  if(p==='historico')loadHistorico()
+  if(p==='remitos')cargarSelectLotes()
 }
 
-function setSyncStatus(s){
-  const d=document.getElementById('sync-dot')
-  d.className='sync-dot'+(s==='ok'?' ok':s==='error'?' error':'')
-}
+function setSyncStatus(s){const d=document.getElementById('sync-dot');d.className='sync-dot'+(s==='ok'?' ok':s==='error'?' error':'')}
 
-// MODAL
 let modalCallback=null
-function confirmar(titulo,msg,cb){
-  document.getElementById('modal-title').textContent=titulo
-  document.getElementById('modal-msg').textContent=msg
-  modalCallback=cb
-  document.getElementById('modal').classList.add('open')
-}
+function confirmar(t,m,cb){document.getElementById('modal-title').textContent=t;document.getElementById('modal-msg').textContent=m;modalCallback=cb;document.getElementById('modal').classList.add('open')}
 function cerrarModal(){document.getElementById('modal').classList.remove('open');modalCallback=null}
 document.getElementById('modal-confirm').onclick=()=>{if(modalCallback)modalCallback();cerrarModal()}
 
 async function conectar(){
-  const url=document.getElementById('cfg-url').value.trim()
-  const key=document.getElementById('cfg-key').value.trim()
+  const url=document.getElementById('cfg-url').value.trim(),key=document.getElementById('cfg-key').value.trim()
   const errEl=document.getElementById('conn-error')
   if(!url||!key){errEl.textContent='Completá los dos campos.';return}
-  errEl.textContent=''
   try{
     sb=supabase.createClient(url,key)
     const{data,error}=await sb.from('inventario').select('retazos').limit(1)
@@ -266,22 +246,18 @@ async function conectar(){
     localStorage.setItem(STORAGE_KEY,JSON.stringify({url,key}))
     inventario=data[0]?.retazos||[]
     document.getElementById('setup-banner').style.display='none'
-    setSyncStatus('ok')
-    renderInventario()
-    renderPedidos()
+    setSyncStatus('ok');renderInventario();renderPedidos()
   }catch(e){errEl.textContent='Error: '+(e.message||'verificá la URL y la clave.');setSyncStatus('error')}
 }
 
 async function recargarInventario(){
   if(!sb)return
   const{data,error}=await sb.from('inventario').select('retazos').limit(1)
-  if(!error){inventario=data[0]?.retazos||[];renderInventario();setSyncStatus('ok')}
-  else setSyncStatus('error')
+  if(!error){inventario=data[0]?.retazos||[];renderInventario();setSyncStatus('ok')}else setSyncStatus('error')
 }
 
 async function persistInventario(inv){
-  if(!sb)return
-  setSyncStatus('')
+  if(!sb)return;setSyncStatus('')
   try{
     const{data}=await sb.from('inventario').select('id').limit(1)
     const id=data[0]?.id
@@ -291,14 +267,12 @@ async function persistInventario(inv){
   }catch(e){setSyncStatus('error')}
 }
 
-async function guardarHistorial(tubosNuevos,retazosUsados,aprovechamiento,metrosDesp,metrosUsados,cortes){
+async function guardarHistorial(tubosNuevos,retazosUsados,aprov,desp,usados,tubosDetalle){
   if(!sb)return
-  const{data,error}=await sb.from('historial').insert({
+  const{data}=await sb.from('historial').insert({
     tubos_nuevos:tubosNuevos,retazos_usados:retazosUsados,
-    aprovechamiento:parseFloat(aprovechamiento),
-    metros_desperdicio:parseFloat(metrosDesp),
-    metros_usados:parseFloat(metrosUsados),
-    cortes:cortes
+    aprovechamiento:parseFloat(aprov),metros_desperdicio:parseFloat(desp),
+    metros_usados:parseFloat(usados),cortes:tubosDetalle
   }).select()
   return data?.[0]
 }
@@ -307,20 +281,166 @@ async function loadHistorico(){
   if(!sb)return
   const{data,error}=await sb.from('historial').select('*').order('fecha',{ascending:true})
   if(error||!data){document.getElementById('hist-metrics').innerHTML='<div class="empty">Sin datos aún.</div>';return}
-  historialData=data
-  renderHistorico(data)
+  historialData=data;renderHistorico(data)
+}
+
+async function cargarSelectLotes(){
+  if(!sb)return
+  const{data}=await sb.from('historial').select('id,fecha,tubos_nuevos,aprovechamiento').order('fecha',{ascending:false})
+  if(!data)return
+  historialData=data.length>0?data:historialData
+  const sel=document.getElementById('lote-select')
+  sel.innerHTML='<option value="">-- Seleccioná un lote --</option>'
+  data.forEach(row=>{
+    const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+    const op=document.createElement('option')
+    op.value=row.id
+    op.textContent=`${fecha} — ${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''} — ${parseFloat(row.aprovechamiento).toFixed(1)}%`
+    sel.appendChild(op)
+  })
+}
+
+async function cargarLoteRemito(){
+  const id=document.getElementById('lote-select').value
+  if(!id){document.getElementById('remito-contenido').innerHTML='<div class="empty">Seleccioná un lote.</div>';return}
+  const{data,error}=await sb.from('historial').select('*').eq('id',id).single()
+  if(error||!data)return
+  loteActualRemito=data
+  renderRemito(data)
+}
+
+function renderRemito(lote){
+  const fecha=new Date(lote.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+  const tubos=lote.cortes||[]
+  const ap=parseFloat(lote.aprovechamiento)
+  const cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
+
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div>
+      <div style="font-size:16px;font-weight:600;">Remito de cortes</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px;">${fecha}</div>
+    </div>
+    <button class="btn-blue" onclick="generarPDF()">⬇ Descargar PDF</button>
+  </div>
+  <div class="metrics" style="margin-bottom:20px;">
+    <div class="metric"><div class="ml">Tubos nuevos</div><div class="mv">${lote.tubos_nuevos}</div></div>
+    <div class="metric"><div class="ml">Retazos usados</div><div class="mv">${lote.retazos_usados}</div></div>
+    <div class="metric"><div class="ml">Aprovechamiento</div><div class="mv"><span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span></div></div>
+    <div class="metric"><div class="ml">Desperdicio</div><div class="mv">${parseFloat(lote.metros_desperdicio).toFixed(2)} m</div></div>
+  </div>`
+
+  if(Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'){
+    tubos.forEach((tubo,i)=>{
+      const esNuevo=!tubo.fromInv
+      html+=`<div class="remito-card">
+        <div class="remito-header">
+          <div>
+            <div class="remito-num">Paquete ${i+1}</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px;">${tubo.rs.toFixed(3)} m total</div>
+          </div>
+          <span class="badge ${esNuevo?'green':'blue'}">${esNuevo?'Tubo nuevo':'Retazo inventario '+tubo.rs.toFixed(3)+' m'}</span>
+        </div>`
+      tubo.cuts.forEach((c,ci)=>{
+        html+=`<div class="paquete-item ${esNuevo?'nuevo':'retazo'}">
+          <span><strong>Corte ${ci+1}</strong> — tubo ${c.toFixed(3)} m <span style="font-size:12px;color:var(--text2)">(ancho cortina: ${r3(c+0.03).toFixed(3)} m)</span></span>
+        </div>`
+      })
+      html+=`<div class="remito-footer">
+        <span style="font-size:12px;color:var(--text2)">Usado: ${tubo.usado.toFixed(3)} m</span>
+        <span style="font-size:12px;color:${tubo.desp>=MIN_RETAZO?'var(--blue)':'var(--text3)'}">
+          ${tubo.desp.toFixed(3)} m ${tubo.desp>=MIN_RETAZO?'→ retazo útil':'→ descarte'}</span>
+      </div></div>`
+    })
+  }else{
+    html+='<div class="empty">Este lote fue guardado sin detalle por tubo. Los lotes nuevos sí incluirán esta información.</div>'
+  }
+
+  document.getElementById('remito-contenido').innerHTML=html
+}
+
+function generarPDF(){
+  if(!loteActualRemito){return}
+  const {jsPDF}=window.jspdf
+  const doc=new jsPDF({unit:'mm',format:'a4'})
+  const lote=loteActualRemito
+  const fecha=new Date(lote.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+  const tubos=lote.cortes||[]
+  const ap=parseFloat(lote.aprovechamiento)
+
+  let y=15
+  const lm=15,rm=195,w=180
+
+  // Header
+  doc.setFillColor(29,158,117)
+  doc.rect(lm,y,w,14,'F')
+  doc.setTextColor(255,255,255)
+  doc.setFontSize(13);doc.setFont('helvetica','bold')
+  doc.text('PANORAMA PERSIANAS — REMITO DE CORTES R8',lm+4,y+9)
+  y+=20
+
+  doc.setTextColor(60,60,60);doc.setFontSize(10);doc.setFont('helvetica','normal')
+  doc.text('Fecha del lote: '+fecha,lm,y);y+=6
+  doc.text('Tubos nuevos: '+lote.tubos_nuevos+'   |   Retazos usados: '+lote.retazos_usados+'   |   Aprovechamiento: '+ap.toFixed(1)+'%   |   Desperdicio: '+parseFloat(lote.metros_desperdicio).toFixed(2)+' m',lm,y);y+=10
+
+  doc.setDrawColor(200,200,200);doc.line(lm,y,rm,y);y+=6
+
+  if(Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'){
+    tubos.forEach((tubo,i)=>{
+      if(y>260){doc.addPage();y=15}
+      const esNuevo=!tubo.fromInv
+
+      // Encabezado paquete
+      doc.setFillColor(esNuevo?225:230,esNuevo?245:240,esNuevo?237:252)
+      doc.rect(lm,y,w,9,'F')
+      doc.setFont('helvetica','bold');doc.setFontSize(10)
+      doc.setTextColor(esNuevo?8:12,esNuevo?80:68,esNuevo?65:124)
+      doc.text('PAQUETE '+(i+1)+' — '+(esNuevo?'TUBO NUEVO (5.98 m)':'RETAZO INVENTARIO ('+tubo.rs.toFixed(3)+' m)'),lm+3,y+6)
+      y+=11
+
+      // Cortes
+      doc.setFont('helvetica','normal');doc.setTextColor(40,40,40);doc.setFontSize(9)
+      tubo.cuts.forEach((c,ci)=>{
+        if(y>270){doc.addPage();y=15}
+        doc.setFillColor(ci%2===0?248:255,ci%2===0?248:255,ci%2===0?248:255)
+        doc.rect(lm,y,w,7,'F')
+        doc.text('  Corte '+(ci+1),lm+2,y+5)
+        doc.setFont('helvetica','bold')
+        doc.text(c.toFixed(3)+' m',lm+30,y+5)
+        doc.setFont('helvetica','normal');doc.setTextColor(120,120,120)
+        doc.text('(ancho cortina: '+r3(c+0.03).toFixed(3)+' m)',lm+55,y+5)
+        doc.setTextColor(40,40,40)
+        y+=7
+      })
+
+      // Footer tubo
+      doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(100,100,100)
+      doc.text('Usado: '+tubo.usado.toFixed(3)+' m   |   '+
+        (tubo.desp>=MIN_RETAZO?'Retazo útil: '+tubo.desp.toFixed(3)+' m (pasa a inventario)':'Descarte: '+tubo.desp.toFixed(3)+' m'),lm+2,y+4)
+      y+=8
+      doc.setDrawColor(220,220,220);doc.line(lm,y,rm,y);y+=5
+    })
+  }else{
+    doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(150,150,150)
+    doc.text('Lote sin detalle por tubo disponible.',lm,y);y+=8
+  }
+
+  // Footer página
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(160,160,160)
+  doc.text('Generado por Optimizador Tubos R8 — Panorama Persianas',lm,290)
+
+  const fechaArchivo=new Date(lote.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-')
+  doc.save('remito-cortes-'+fechaArchivo+'.pdf')
 }
 
 function groupBy(data,period){
   const groups={}
   data.forEach(row=>{
     const d=new Date(row.fecha);let key
-    if(period==='dia') key=d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})
+    if(period==='dia')key=d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})
     else if(period==='semana'){const s=new Date(d);s.setDate(d.getDate()-d.getDay());key='Sem '+s.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})}
     else key=d.toLocaleDateString('es-AR',{month:'short',year:'numeric'})
-    if(!groups[key])groups[key]={label:key,tubos:0,retazos:0,desp:0,usados:0,aprovs:[]}
-    groups[key].tubos+=row.tubos_nuevos;groups[key].retazos+=row.retazos_usados
-    groups[key].desp+=parseFloat(row.metros_desperdicio);groups[key].usados+=parseFloat(row.metros_usados)
+    if(!groups[key])groups[key]={label:key,tubos:0,desp:0,aprovs:[]}
+    groups[key].tubos+=row.tubos_nuevos;groups[key].desp+=parseFloat(row.metros_desperdicio)
     groups[key].aprovs.push(parseFloat(row.aprovechamiento))
   })
   return Object.values(groups).map(g=>({...g,aprov:r2(g.aprovs.reduce((a,b)=>a+b,0)/g.aprovs.length),desp:r2(g.desp)}))
@@ -330,93 +450,89 @@ function renderHistorico(data){
   const grouped=groupBy(data,currentPeriod)
   const labels=grouped.map(g=>g.label)
   const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches
-  const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)'
-  const tc=isDark?'#a0a09a':'#6b6b67'
-  const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11}}}}}
+  const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)',tc=isDark?'#a0a09a':'#6b6b67'
+  const bo={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11}}}}}
 
-  const totalLotes=data.length
-  const avgAprov=r2(data.reduce((a,b)=>a+parseFloat(b.aprovechamiento),0)/Math.max(data.length,1))
-  const totalTubos=data.reduce((a,b)=>a+b.tubos_nuevos,0)
-  const totalDesp=r2(data.reduce((a,b)=>a+parseFloat(b.metros_desperdicio),0))
+  const totalLotes=data.length,avgAprov=r2(data.reduce((a,b)=>a+parseFloat(b.aprovechamiento),0)/Math.max(data.length,1))
+  const totalTubos=data.reduce((a,b)=>a+b.tubos_nuevos,0),totalDesp=r2(data.reduce((a,b)=>a+parseFloat(b.metros_desperdicio),0))
 
   document.getElementById('hist-metrics').innerHTML=`
     <div class="hm"><div class="hml">Lotes procesados</div><div class="hmv">${totalLotes}</div><div class="hms">total histórico</div></div>
     <div class="hm"><div class="hml">Aprovechamiento promedio</div><div class="hmv">${avgAprov}%</div><div class="hms">todos los lotes</div></div>
     <div class="hm"><div class="hml">Tubos totales</div><div class="hmv">${totalTubos}</div><div class="hms">${totalDesp} m desperdiciados</div></div>`
 
-  if(chartAprov)chartAprov.destroy()
-  if(chartTubos)chartTubos.destroy()
-  if(chartDesp)chartDesp.destroy()
+  if(chartAprov)chartAprov.destroy();if(chartTubos)chartTubos.destroy();if(chartDesp)chartDesp.destroy()
+  chartAprov=new Chart(document.getElementById('chart-aprov'),{type:'line',data:{labels,datasets:[{data:grouped.map(g=>g.aprov),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,fill:true,pointRadius:4,pointBackgroundColor:'#1D9E75'}]},options:{...bo,scales:{...bo.scales,y:{...bo.scales.y,min:0,max:100,ticks:{...bo.scales.y.ticks,callback:v=>v+'%'}}}}})
+  chartTubos=new Chart(document.getElementById('chart-tubos'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.tubos),backgroundColor:'rgba(55,138,221,0.7)',borderColor:'#378ADD',borderWidth:1,borderRadius:4}]},options:{...bo}})
+  chartDesp=new Chart(document.getElementById('chart-desp'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.desp),backgroundColor:'rgba(226,75,74,0.7)',borderColor:'#E24B4A',borderWidth:1,borderRadius:4}]},options:{...bo,scales:{...bo.scales,y:{...bo.scales.y,ticks:{...bo.scales.y.ticks,callback:v=>v+'m'}}}}})
 
-  chartAprov=new Chart(document.getElementById('chart-aprov'),{type:'line',data:{labels,datasets:[{data:grouped.map(g=>g.aprov),borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',tension:0.3,fill:true,pointRadius:4,pointBackgroundColor:'#1D9E75'}]},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,max:100,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'%'}}}}})
-  chartTubos=new Chart(document.getElementById('chart-tubos'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.tubos),backgroundColor:'rgba(55,138,221,0.7)',borderColor:'#378ADD',borderWidth:1,borderRadius:4}]},options:{...baseOpts}})
-  chartDesp=new Chart(document.getElementById('chart-desp'),{type:'bar',data:{labels,datasets:[{data:grouped.map(g=>g.desp),backgroundColor:'rgba(226,75,74,0.7)',borderColor:'#E24B4A',borderWidth:1,borderRadius:4}]},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'m'}}}}})
-
-  // Lotes expandibles
   const recent=[...data].reverse()
   let html=''
   recent.forEach(row=>{
-    const ap=parseFloat(row.aprovechamiento)
-    const cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
+    const ap=parseFloat(row.aprovechamiento),cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
-    const cortes=row.cortes||[]
+    const tubos=row.cortes||[]
+    const cantCortes=Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'?tubos.reduce((a,t)=>a+(t.cuts?.length||0),0):tubos.length
     html+=`<div class="lote-row" id="lote-${row.id}">
       <div class="lote-header" onclick="toggleLote(${row.id})">
         <div class="lote-info">
-          <span class="lote-fecha">${fecha}</span>
+          <span style="font-size:13px;font-weight:500;">${fecha}</span>
           <span class="badge blue">${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''}</span>
           <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
           <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(2)} m desperdicio</span>
-          <span style="font-size:12px;color:var(--text3)">${cortes.length} corte${cortes.length!==1?'s':''}</span>
+          <span style="font-size:12px;color:var(--text3)">${cantCortes} corte${cantCortes!==1?'s':''}</span>
         </div>
         <div class="lote-actions" onclick="event.stopPropagation()">
-          <button class="btn-sm btn-red" onclick="eliminarLote(${row.id})">Eliminar lote</button>
+          <button class="btn-sm btn-red" onclick="eliminarLote(${row.id})">Eliminar</button>
           <span style="color:var(--text3);font-size:16px;">›</span>
         </div>
       </div>
       <div class="lote-body" id="body-${row.id}">
-        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Cortes del lote</div>
-        ${cortes.length?cortes.map((c,i)=>`
-          <div class="corte-item">
-            <span>Corte ${i+1} — <strong>${c.toFixed(3)} m</strong> <span style="color:var(--text3);font-size:12px;">(ancho cortina: ${r3(c+0.03).toFixed(3)} m)</span></span>
-            <button class="btn-sm btn-red" onclick="eliminarCorte(${row.id},${i})">Eliminar</button>
-          </div>`).join(''):'<div class="empty">Sin cortes registrados en este lote.</div>'}
+        ${renderTubosDetalle(tubos,row.id)}
       </div>
     </div>`
   })
   document.getElementById('hist-lotes').innerHTML=html||'<div class="empty">Sin lotes registrados.</div>'
 }
 
-function toggleLote(id){
-  const body=document.getElementById('body-'+id)
-  body.classList.toggle('open')
+function renderTubosDetalle(tubos,loteId){
+  if(!tubos||tubos.length===0)return'<div class="empty">Sin detalle disponible.</div>'
+  if(typeof tubos[0]!=='object')return'<div class="empty">Lote antiguo sin detalle por tubo.</div>'
+  return tubos.map((tubo,ti)=>`
+    <div class="tubo-bloque">
+      <div class="tubo-bloque-header">
+        <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo inventario '+tubo.rs.toFixed(3)+' m':'Tubo nuevo'}</span>
+        <span style="font-size:12px;font-weight:400;color:var(--text2)">Usado: ${tubo.usado.toFixed(3)} m — ${tubo.desp>=MIN_RETAZO?'retazo útil '+tubo.desp.toFixed(3)+' m':'descarte '+tubo.desp.toFixed(3)+' m'}</span>
+      </div>
+      ${tubo.cuts.map((c,ci)=>`
+        <div class="corte-item">
+          <span>Corte ${ci+1} — <strong>${c.toFixed(3)} m</strong> <span style="color:var(--text3);font-size:12px;">(ancho: ${r3(c+0.03).toFixed(3)} m)</span></span>
+          <button class="btn-sm btn-red" onclick="eliminarCorte(${loteId},${ti},${ci})">×</button>
+        </div>`).join('')}
+    </div>`).join('')
 }
+
+function toggleLote(id){document.getElementById('body-'+id).classList.toggle('open')}
 
 function eliminarLote(id){
-  confirmar('Eliminar lote','¿Seguro que querés eliminar este lote completo? Esta acción no se puede deshacer.',async()=>{
-    await sb.from('historial').delete().eq('id',id)
+  confirmar('Eliminar lote','¿Seguro que querés eliminar este lote completo?',async()=>{
+    await sb.from('historial').delete().eq('id',id);await loadHistorico()
+  })
+}
+
+async function eliminarCorte(loteId,tuboIdx,corteIdx){
+  const lote=historialData.find(r=>r.id===loteId);if(!lote)return
+  const tubos=JSON.parse(JSON.stringify(lote.cortes))
+  const c=tubos[tuboIdx].cuts[corteIdx]
+  confirmar('Eliminar corte',`¿Eliminar corte ${c.toFixed(3)} m (ancho: ${r3(c+0.03).toFixed(3)} m)?`,async()=>{
+    tubos[tuboIdx].cuts.splice(corteIdx,1)
+    if(tubos[tuboIdx].cuts.length===0)tubos.splice(tuboIdx,1)
+    await sb.from('historial').update({cortes:tubos}).eq('id',loteId)
     await loadHistorico()
   })
 }
 
-async function eliminarCorte(loteId,corteIdx){
-  const lote=historialData.find(r=>r.id===loteId)
-  if(!lote)return
-  const corteVal=(lote.cortes[corteIdx]+0.03).toFixed(3)
-  confirmar('Eliminar corte',`¿Eliminar el corte ${corteVal} m (tubo ${lote.cortes[corteIdx].toFixed(3)} m) de este lote?`,async()=>{
-    const nuevosCortes=[...lote.cortes]
-    nuevosCortes.splice(corteIdx,1)
-    await sb.from('historial').update({cortes:nuevosCortes}).eq('id',loteId)
-    await loadHistorico()
-  })
-}
-
-function setPeriod(p,el){
-  currentPeriod=p
-  document.querySelectorAll('.period-tab').forEach(e=>e.classList.remove('active'))
-  el.classList.add('active')
-  loadHistorico()
-}
+function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab').forEach(e=>e.classList.remove('active'));el.classList.add('active');loadHistorico()}
 
 function renderPedidos(){
   const s=document.getElementById('pedidos-summary'),l=document.getElementById('pedidos-list')
@@ -430,12 +546,8 @@ function renderInventario(){
   c.textContent='Inventario: '+inventario.length+(inventario.length===1?' retazo':' retazos')
   if(!inventario.length){el.innerHTML='<div class="empty">Sin retazos guardados</div>';return}
   el.innerHTML=inventario.map((r,i)=>`
-    <div class="inv-item">
-      <span style="font-weight:500">${r.toFixed(3)} m</span>
-      <div style="display:flex;gap:5px;align-items:center;">
-        <span class="badge green">útil</span>
-        <button class="btn-sm" onclick="removeInv(${i})">×</button>
-      </div>
+    <div class="inv-item"><span style="font-weight:500">${r.toFixed(3)} m</span>
+      <div style="display:flex;gap:5px;align-items:center;"><span class="badge green">útil</span><button class="btn-sm" onclick="removeInv(${i})">×</button></div>
     </div>`).join('')
 }
 
@@ -446,14 +558,12 @@ function addSingle(){
   const v=parseFloat(inp.value)
   if(isNaN(v)||v<=0){err.textContent='Ingresá un ancho válido.';return}
   const c=r3(v-0.03)
-  if(c>MAX_CORTE){err.textContent='Ancho '+v+' m → tubo '+c.toFixed(3)+' m supera el máx R8 (1.77 m).';return}
+  if(c>MAX_CORTE){err.textContent='Ancho '+v+' m → tubo '+c.toFixed(3)+' m supera el máx R8.';return}
   if(c<=0){err.textContent='Ancho muy pequeño.';return}
   err.textContent='';pedidos.push(c);inp.value='';inp.focus();renderPedidos()
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('single-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSingle()})
-})
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('single-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSingle()})})
 
 function addBulk(){
   const raw=document.getElementById('bulk-input').value
@@ -503,24 +613,23 @@ function optimizar(){
       }
       if(best){fit.push(...best.map(idx=>tr[idx]));best.sort((a,b)=>b-a).forEach(idx=>tr.splice(idx,1));esp=r3(esp-bs);ch=true}
     }
-    if(fit.length>0){tubos.push({cuts:fit,fi:true,rs:ret,usado:r3(ret-esp),desp:r3(esp)});usedIdx.push(i);rem=tr}
+    if(fit.length>0){tubos.push({cuts:fit,fromInv:true,rs:ret,usado:r3(ret-esp),desp:r3(esp)});usedIdx.push(i);rem=tr}
   }
 
   greedyPack(rem,LONGITUD_TUBO).forEach(cuts=>{
     const u=r3(cuts.reduce((a,b)=>a+b,0))
-    tubos.push({cuts,fi:false,rs:LONGITUD_TUBO,usado:u,desp:r3(LONGITUD_TUBO-u)})
+    tubos.push({cuts,fromInv:false,rs:LONGITUD_TUBO,usado:u,desp:r3(LONGITUD_TUBO-u)})
   })
 
   const nRetazos=tubos.filter(t=>t.desp>=MIN_RETAZO).map(t=>r3(t.desp))
   const invFinal=[...invCopy.filter((_,i)=>!usedIdx.includes(i)),...nRetazos].filter(r=>r>=MIN_RETAZO).sort((a,b)=>b-a)
-  const todosCortes=tubos.flatMap(t=>t.cuts)
 
-  const totalNuevos=tubos.filter(t=>!t.fi).length
+  const totalNuevos=tubos.filter(t=>!t.fromInv).length
   const totalMat=r3(totalNuevos*LONGITUD_TUBO+usedIdx.reduce((a,i)=>a+invCopy[i],0))
   const totalUsado=r3(pedidos.reduce((a,b)=>a+b,0))
-  const totalDesp=r3(tubos.filter(t=>!t.fi).reduce((a,t)=>a+t.desp,0))
+  const totalDesp=r3(tubos.filter(t=>!t.fromInv).reduce((a,t)=>a+t.desp,0))
   const aprov=totalMat>0?(totalUsado/totalMat*100).toFixed(1):'0.0'
-  const retGen=tubos.filter(t=>!t.fi&&t.desp>=MIN_RETAZO).length
+  const retGen=tubos.filter(t=>!t.fromInv&&t.desp>=MIN_RETAZO).length
 
   let html=`<div class="metrics">
     <div class="metric"><div class="ml">Tubos nuevos</div><div class="mv">${totalNuevos}</div><div class="ms">de 5.98 m</div></div>
@@ -531,11 +640,10 @@ function optimizar(){
 
   tubos.forEach((t,idx)=>{
     const pct=v=>((v/t.rs)*100).toFixed(1)
-    const rp=t.desp>=MIN_RETAZO?parseFloat(pct(t.desp)):0
-    const wp=t.desp<MIN_RETAZO?parseFloat(pct(t.desp)):0
-    html+=`<div class="tube-card${t.fi?' fi':''}">
+    const rp=t.desp>=MIN_RETAZO?parseFloat(pct(t.desp)):0,wp=t.desp<MIN_RETAZO?parseFloat(pct(t.desp)):0
+    html+=`<div class="tube-card${t.fromInv?' fi':''}">
       <div class="tube-head">
-        <div class="tube-name">${t.fi?'<span class="badge blue">Retazo inventario</span>':'<span style="color:var(--text2)">Tubo '+(idx+1)+'</span>'}
+        <div class="tube-name">${t.fromInv?'<span class="badge blue">Retazo inventario '+t.rs.toFixed(3)+' m</span>':'<span style="color:var(--text2)">Paquete '+(idx+1)+'</span>'}
           <span style="font-size:11px;font-weight:400;color:var(--text3)">${t.rs.toFixed(3)} m</span></div>
         <div class="tube-meta">${t.usado.toFixed(3)} m usados<br>
           <span style="color:${t.desp>=MIN_RETAZO?'var(--blue)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ retazo útil':'descarte'}</span></div>
@@ -545,40 +653,32 @@ function optimizar(){
         ${rp>0?`<div class="seg ret" style="width:${rp}%">${rp>6?t.desp.toFixed(2)+' m':''}</div>`:''}
         ${wp>0?`<div class="seg waste" style="width:${wp}%">${wp>4?t.desp.toFixed(2)+' m':''}</div>`:''}
       </div>
-      <div class="cuts-wrap">${t.cuts.map(c=>`<span class="pill${t.fi?' inv':''}">${c.toFixed(3)}</span>`).join('')}</div>
+      <div class="cuts-wrap">${t.cuts.map(c=>`<span class="pill${t.fromInv?' inv':''}">${c.toFixed(3)}</span>`).join('')}</div>
     </div>`
   })
 
   html+=`<div class="divider"></div><div class="section-title">Inventario para el próximo lote</div>
   <div class="card">
     <div style="margin-bottom:12px;">${invFinal.length?invFinal.map(r=>`<div class="ni-item keep"><span>${r.toFixed(3)} m</span><span class="badge green">pasa al inventario</span></div>`).join(''):'<div class="empty">Sin retazos útiles.</div>'}</div>
-    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(todosCortes)})'>✓ Guardar inventario y registrar lote</button>
+    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(tubos)})'>✓ Guardar inventario y registrar lote</button>
   </div>`
 
   document.getElementById('results').innerHTML=html
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})
 }
 
-async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,cortes){
+async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle){
   inventario=inv
-  await Promise.all([
-    persistInventario(inventario),
-    guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,cortes)
-  ])
-  pedidos=[]
-  renderPedidos()
-  renderInventario()
-  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote registrado con '+(cortes?.length||0)+' cortes. Inventario guardado en la nube.</div>'
+  await Promise.all([persistInventario(inventario),guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle)])
+  pedidos=[];renderPedidos();renderInventario()
+  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote registrado. Podés descargarlo como PDF en la pestaña <strong>Remitos PDF</strong>.</div>'
   window.scrollTo({top:0,behavior:'smooth'})
 }
 
 async function init(){
   const saved=localStorage.getItem(STORAGE_KEY)
-  if(saved){
-    try{const{url,key}=JSON.parse(saved);document.getElementById('cfg-url').value=url;document.getElementById('cfg-key').value=key;await conectar()}catch(e){}
-  }
+  if(saved){try{const{url,key}=JSON.parse(saved);document.getElementById('cfg-url').value=url;document.getElementById('cfg-key').value=key;await conectar()}catch(e){}}
 }
-
 init()
 </script>
 </body>
