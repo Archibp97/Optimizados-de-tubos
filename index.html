@@ -153,10 +153,11 @@
     <div class="card">
       <div class="card-title">Pedidos del día</div>
       <div class="row" style="margin-bottom:12px;">
-        <select id="linea-select">
+        <select id="linea-select" style="flex:1;">
           <option value="SHEER">SHEER</option>
           <option value="ENROLLABLE">ENROLLABLE</option>
         </select>
+        <input type="text" id="paquete-input" placeholder="PQ1, PQ2..." style="flex:0.8;text-transform:uppercase;" maxlength="10"/>
       </div>
       <div class="row">
         <input type="number" id="single-input" placeholder="Ancho cortina (m)" step="0.001" min="0.03" max="1.80"/>
@@ -267,12 +268,12 @@ async function persistInventario(inv){
   }catch(e){setSyncStatus('error')}
 }
 
-async function guardarHistorial(tubosNuevos,retazosUsados,aprov,desp,usados,tubosDetalle,linea){
+async function guardarHistorial(tubosNuevos,retazosUsados,aprov,desp,usados,tubosDetalle,linea,paquete){
   if(!sb)return
   const{data}=await sb.from('historial').insert({
     tubos_nuevos:tubosNuevos,retazos_usados:retazosUsados,
     aprovechamiento:parseFloat(aprov),metros_desperdicio:parseFloat(desp),
-    metros_usados:parseFloat(usados),cortes:tubosDetalle,linea:linea
+    metros_usados:parseFloat(usados),cortes:tubosDetalle,linea:linea,paquete:paquete
   }).select()
   return data?.[0]
 }
@@ -286,7 +287,7 @@ async function loadHistorico(){
 
 async function cargarSelectLotes(){
   if(!sb)return
-  const{data}=await sb.from('historial').select('id,fecha,tubos_nuevos,aprovechamiento,linea').order('fecha',{ascending:false})
+  const{data}=await sb.from('historial').select('id,fecha,tubos_nuevos,aprovechamiento,linea,paquete').order('fecha',{ascending:false})
   if(!data)return
   historialData=data.length>0?data:historialData
   const sel=document.getElementById('lote-select')
@@ -295,7 +296,8 @@ async function cargarSelectLotes(){
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
     const op=document.createElement('option')
     op.value=row.id
-    op.textContent=`${fecha} — ${row.linea||'R8'} — ${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''} — ${parseFloat(row.aprovechamiento).toFixed(1)}%`
+    const etiqueta=(row.linea||'R8')+(row.paquete?' — '+row.paquete:'')
+    op.textContent=`${fecha} — ${etiqueta} — ${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''} — ${parseFloat(row.aprovechamiento).toFixed(1)}%`
     sel.appendChild(op)
   })
 }
@@ -314,6 +316,8 @@ function renderRemito(lote){
   const ap=parseFloat(lote.aprovechamiento)
   const cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
   const linea=lote.linea||'R8'
+  const paquete=lote.paquete||''
+  const etiqueta=linea+(paquete?' — '+paquete:'')
 
   let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
     <div>
@@ -321,7 +325,7 @@ function renderRemito(lote){
       <div style="font-size:12px;color:var(--text2);margin-top:2px;">${fecha}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
-      <span class="linea-badge linea-${linea.toLowerCase()}">${linea}</span>
+      <span class="linea-badge linea-${linea.toLowerCase()}" style="font-size:13px;padding:5px 14px;">${etiqueta}</span>
       <button class="btn-blue" onclick="generarPDF()">⬇ Descargar PDF</button>
     </div>
   </div>
@@ -370,6 +374,8 @@ function generarPDF(){
   const tubos=lote.cortes||[]
   const ap=parseFloat(lote.aprovechamiento)
   const linea=lote.linea||'R8'
+  const paquete=lote.paquete||''
+  const etiqueta=linea+(paquete?' — '+paquete:'')
   const lm=15,rm=195,w=180
 
   // ENCABEZADO
@@ -379,7 +385,7 @@ function generarPDF(){
   doc.setFontSize(13);doc.setFont('helvetica','bold')
   doc.text('PANORAMA PERSIANAS',lm,9)
   doc.setFontSize(9);doc.setFont('helvetica','normal')
-  doc.text('Orden de corte — Tubos R8 — '+linea,lm,15)
+  doc.text('Orden de corte — Tubos R8 — '+etiqueta,lm,15)
   doc.text('Fecha: '+fecha+'   |   Aprovech: '+ap.toFixed(1)+'%   |   Tubos: '+lote.tubos_nuevos+'   |   Desp: '+parseFloat(lote.metros_desperdicio).toFixed(2)+' m',rm,9,{align:'right'})
   doc.text('Lote #'+lote.id,rm,15,{align:'right'})
 
@@ -435,7 +441,8 @@ function generarPDF(){
   doc.text('Generado por Optimizador Tubos R8 — Panorama Persianas',lm,292)
 
   const fechaArchivo=new Date(lote.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-')
-  doc.save('orden-corte-'+linea.toLowerCase()+'-'+fechaArchivo+'.pdf')
+  const nombreArchivo='orden-'+linea.toLowerCase()+(paquete?'-'+paquete.toLowerCase():'')+'-'+fechaArchivo+'.pdf'
+  doc.save(nombreArchivo)
 }
 
 function groupBy(data,period){
@@ -475,12 +482,14 @@ function renderHistorico(data){
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
     const tubos=row.cortes||[]
     const linea=row.linea||'R8'
+    const paquete=row.paquete||''
+    const etiqueta=linea+(paquete?' — '+paquete:'')
     const cantCortes=Array.isArray(tubos)&&tubos.length>0&&typeof tubos[0]==='object'?tubos.reduce((a,t)=>a+(t.cuts?.length||0),0):tubos.length
     html+=`<div class="lote-row" id="lote-${row.id}">
       <div class="lote-header" onclick="toggleLote(${row.id})">
         <div class="lote-info">
           <span style="font-size:13px;font-weight:500;">${fecha}</span>
-          <span class="linea-badge linea-${linea.toLowerCase()}">${linea}</span>
+          <span class="linea-badge linea-${linea.toLowerCase()}">${etiqueta}</span>
           <span class="badge blue">${row.tubos_nuevos} tubo${row.tubos_nuevos!==1?'s':''}</span>
           <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
           <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(2)} m desp.</span>
@@ -541,8 +550,10 @@ function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab'
 function renderPedidos(){
   const s=document.getElementById('pedidos-summary'),l=document.getElementById('pedidos-list')
   const linea=document.getElementById('linea-select').value
+  const paquete=document.getElementById('paquete-input').value.trim().toUpperCase()
+  const etiqueta=linea+(paquete?' — '+paquete:'')
   if(!pedidos.length){s.textContent='';l.innerHTML='<span style="font-size:12px;color:var(--text3)">Sin pedidos cargados</span>';return}
-  s.innerHTML=pedidos.length+' cortes · suma: '+r2(pedidos.reduce((a,b)=>a+b,0))+' m · <span class="linea-badge linea-'+linea.toLowerCase()+'" style="font-size:11px;padding:2px 8px;">'+linea+'</span>'
+  s.innerHTML=pedidos.length+' cortes · suma: '+r2(pedidos.reduce((a,b)=>a+b,0))+' m · <span class="linea-badge linea-'+linea.toLowerCase()+'" style="font-size:11px;padding:2px 8px;">'+etiqueta+'</span>'
   l.innerHTML=[...pedidos].sort((a,b)=>b-a).map(c=>`<span class="pill">${c.toFixed(3)}</span>`).join('')
 }
 
@@ -571,6 +582,7 @@ function addSingle(){
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('single-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSingle()})
   document.getElementById('linea-select').addEventListener('change',renderPedidos)
+  document.getElementById('paquete-input').addEventListener('input',renderPedidos)
 })
 
 function addBulk(){
@@ -608,6 +620,8 @@ function greedyPack(cuts,len){
 function optimizar(){
   if(!pedidos.length){document.getElementById('results').innerHTML='<div class="empty">Cargá los pedidos primero.</div>';return}
   const linea=document.getElementById('linea-select').value
+  const paquete=document.getElementById('paquete-input').value.trim().toUpperCase()
+  const etiqueta=linea+(paquete?' — '+paquete:'')
   const usedIdx=[],tubos=[]
   const invCopy=[...inventario].sort((a,b)=>b-a)
   let rem=[...pedidos].sort((a,b)=>b-a)
@@ -645,7 +659,7 @@ function optimizar(){
     <div class="metric"><div class="ml">Aprovechamiento</div><div class="mv">${aprov}%</div><div class="ms">sobre material total</div></div>
     <div class="metric"><div class="ml">Retazos generados</div><div class="mv">${retGen}</div><div class="ms">≥ 0.5 m → inventario</div></div>
   </div><div class="divider"></div>
-  <div class="section-title">Distribución por grupo <span class="linea-badge linea-${linea.toLowerCase()}" style="font-size:11px;padding:2px 10px;margin-left:6px;">${linea}</span></div>`
+  <div class="section-title">Distribución por grupo <span class="linea-badge linea-${linea.toLowerCase()}" style="font-size:11px;padding:2px 10px;margin-left:6px;">${etiqueta}</span></div>`
 
   tubos.forEach((t,idx)=>{
     const pct=v=>((v/t.rs)*100).toFixed(1)
@@ -670,18 +684,21 @@ function optimizar(){
   html+=`<div class="divider"></div><div class="section-title">Inventario para el próximo lote</div>
   <div class="card">
     <div style="margin-bottom:12px;">${invFinal.length?invFinal.map(r=>`<div class="ni-item keep"><span>${r.toFixed(3)} m</span><span class="badge green">pasa al inventario</span></div>`).join(''):'<div class="empty">Sin retazos útiles.</div>'}</div>
-    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(tubos)},"${linea}")'>✓ Guardar inventario y registrar lote</button>
+    <button class="btn-green" style="width:100%;padding:10px;font-size:14px;" onclick='aplicarYGuardar(${JSON.stringify(invFinal)},${totalNuevos},${usedIdx.length},"${aprov}",${totalDesp},${totalUsado},${JSON.stringify(tubos)},"${linea}","${paquete}")'>✓ Guardar inventario y registrar lote</button>
   </div>`
 
   document.getElementById('results').innerHTML=html
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})
 }
 
-async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle,linea){
+async function aplicarYGuardar(inv,tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle,linea,paquete){
   inventario=inv
-  await Promise.all([persistInventario(inventario),guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle,linea)])
-  pedidos=[];renderPedidos();renderInventario()
-  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote <strong>'+linea+'</strong> registrado. Descargalo como PDF en la pestaña <strong>Remitos PDF</strong>.</div>'
+  await Promise.all([persistInventario(inventario),guardarHistorial(tubosNuevos,retUsados,aprov,desp,usados,tubosDetalle,linea,paquete)])
+  pedidos=[]
+  document.getElementById('paquete-input').value=''
+  renderPedidos();renderInventario()
+  const etiqueta=linea+(paquete?' — '+paquete:'')
+  document.getElementById('results').innerHTML='<div class="save-banner">✓ Lote <strong>'+etiqueta+'</strong> registrado. Descargalo como PDF en la pestaña <strong>Remitos PDF</strong>.</div>'
   window.scrollTo({top:0,behavior:'smooth'})
 }
 
