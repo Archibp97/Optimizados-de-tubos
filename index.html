@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -164,8 +163,6 @@
 
 <!-- OPTIMIZADOR -->
 <div class="page active" id="page-optimizador">
-
-  <!-- Encabezado del lote -->
   <div class="card">
     <div class="card-title">Identificación del lote</div>
     <div class="row">
@@ -178,7 +175,6 @@
   </div>
 
   <div class="two-col">
-    <!-- R8 -->
     <div class="card">
       <div class="mec-section-title r8-color">● R8 <span style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.03 m · máx 1.77 m</span></div>
       <div class="row">
@@ -197,7 +193,6 @@
       </div>
     </div>
 
-    <!-- R16 -->
     <div class="card">
       <div class="mec-section-title r16-color">● R16 <span style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.04 m · máx 2.60 m</span></div>
       <div class="row">
@@ -230,9 +225,9 @@
   </div>
   <div id="hist-metrics" class="hist-metrics"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
   <div class="charts-grid">
-    <div class="chart-card full"><div class="chart-title">% aprovechamiento (R8 vs R16)</div><div class="chart-wrap"><canvas id="chart-aprov"></canvas></div></div>
+    <div class="chart-card full"><div class="chart-title">% aprovechamiento (SHEER vs ENROLLABLE)</div><div class="chart-wrap"><canvas id="chart-aprov"></canvas></div></div>
     <div class="chart-card"><div class="chart-title">Tubos usados</div><div class="chart-wrap"><canvas id="chart-tubos"></canvas></div></div>
-    <div class="chart-card"><div class="chart-title">Metros de desperdicio</div><div class="chart-wrap"><canvas id="chart-desp"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Metros descartados (real)</div><div class="chart-wrap"><canvas id="chart-desp"></canvas></div></div>
   </div>
   <div class="card">
     <div class="card-title" style="margin-bottom:10px;">Detalle de lotes</div>
@@ -420,14 +415,16 @@ function greedyPack(cuts,len,invCopy){
   return{tubos,usedIdx}
 }
 
+// ── CORRECCIÓN: desperdicio = solo descarte real (<0.5m), aprovechamiento correcto ──
 function calcMetrics(tubos,invCopy,usedIdx,pedidosList,len){
   const totalNuevos=tubos.filter(t=>!t.fromInv).length
   const totalMat=r3(totalNuevos*len+usedIdx.reduce((a,i)=>a+invCopy[i],0))
-  const totalUsado=r3(pedidosList.reduce((a,b)=>a+b,0))
-  const totalDesp=r3(tubos.filter(t=>!t.fromInv).reduce((a,t)=>a+t.desp,0))
-  const aprov=totalMat>0?(totalUsado/totalMat*100).toFixed(1):'0.0'
+  // Solo cuenta como desperdicio lo que va a descarte (< MIN_RETAZO)
+  const totalDesp=r3(tubos.reduce((a,t)=>a+(t.desp<MIN_RETAZO?t.desp:0),0))
+  // Aprovechamiento = (material total - descarte real) / material total
+  const aprov=totalMat>0?((totalMat-totalDesp)/totalMat*100).toFixed(1):'0.0'
   const retGen=tubos.filter(t=>t.desp>=MIN_RETAZO).length
-  return{totalNuevos,totalMat,totalUsado,totalDesp,aprov,retGen}
+  return{totalNuevos,totalMat,totalDesp,aprov,retGen}
 }
 
 function renderSeccion(tipo,tubos,metrics){
@@ -437,7 +434,7 @@ function renderSeccion(tipo,tubos,metrics){
       <span class="metric" style="padding:4px 10px;font-size:12px;display:inline-flex;gap:12px;background:var(--bg2);border-radius:var(--rs);">
         <span>${metrics.totalNuevos} tubo${metrics.totalNuevos!==1?'s':''} nuevos</span>
         <span>${metrics.aprov}% aprovech.</span>
-        <span>${metrics.totalDesp.toFixed(2)} m desp.</span>
+        <span>${metrics.totalDesp.toFixed(3)} m descarte</span>
       </span>
     </div>`
 
@@ -488,7 +485,6 @@ function optimizar(){
   if(pedidos.r8.length)html+=renderSeccion('r8',resR8.tubos,mR8)
   if(pedidos.r16.length)html+=renderSeccion('r16',resR16.tubos,mR16)
 
-  // Inventario nuevo
   html+=`<div class="divider"></div><div class="section-title">Inventario actualizado</div>
   <div class="two-col">
     <div class="card"><div class="card-title r8-color">Inventario R8</div>${invR8Final.length?invR8Final.map(r=>`<div class="ni-item keep"><span>${r.toFixed(3)} m</span><span class="badge green">→ inventario</span></div>`).join(''):'<div class="empty">Sin retazos útiles.</div>'}</div>
@@ -497,8 +493,14 @@ function optimizar(){
 
   const totalTubosNuevos=(pedidos.r8.length?mR8.totalNuevos:0)+(pedidos.r16.length?mR16.totalNuevos:0)
   const totalRetazosUsados=resR8.usedIdx.length+resR16.usedIdx.length
-  const aprovTotal=pedidos.r8.length&&pedidos.r16.length?r2((parseFloat(mR8.aprov)+parseFloat(mR16.aprov))/2):pedidos.r8.length?mR8.aprov:mR16.aprov
-  const despTotal=r2((pedidos.r8.length?mR8.totalDesp:0)+(pedidos.r16.length?mR16.totalDesp:0))
+  // Aprovechamiento combinado ponderado por material total
+  const matR8=pedidos.r8.length?mR8.totalMat:0
+  const matR16=pedidos.r16.length?mR16.totalMat:0
+  const despR8=pedidos.r8.length?mR8.totalDesp:0
+  const despR16=pedidos.r16.length?mR16.totalDesp:0
+  const matTotal=r2(matR8+matR16)
+  const despTotal=r2(despR8+despR16)
+  const aprovTotal=matTotal>0?((matTotal-despTotal)/matTotal*100).toFixed(1):'0.0'
 
   html+=`<button class="btn-green" style="width:100%;padding:11px;font-size:14px;margin-top:8px;" onclick='guardarLote(
     ${JSON.stringify(invR8Final)},${JSON.stringify(invR16Final)},
@@ -533,7 +535,6 @@ async function guardarLote(invR8,invR16,tubosNuevos,retazosUsados,aprov,desp,tub
   window.scrollTo({top:0,behavior:'smooth'})
 }
 
-// ── HISTÓRICO ──────────────────────────────────────────────
 async function loadHistorico(){
   if(!sb)return
   const{data,error}=await sb.from('historial').select('*').order('fecha',{ascending:true})
@@ -575,13 +576,12 @@ function renderHistorico(data){
 
   document.getElementById('hist-metrics').innerHTML=`
     <div class="hm"><div class="hml">Lotes procesados</div><div class="hmv">${totalLotes}</div><div class="hms">total</div></div>
-    <div class="hm"><div class="hml">Aprovechamiento prom.</div><div class="hmv">${avgAprov}%</div><div class="hms">todos los lotes</div></div>
+    <div class="hm"><div class="hml">Aprovechamiento prom.</div><div class="hmv">${avgAprov}%</div><div class="hms">sin contar retazos útiles</div></div>
     <div class="hm"><div class="hml">Tubos totales</div><div class="hmv">${totalTubos}</div><div class="hms">nuevos usados</div></div>
-    <div class="hm"><div class="hml">Desperdicio total</div><div class="hmv">${totalDesp} m</div><div class="hms">acumulado</div></div>`
+    <div class="hm"><div class="hml">Descarte total</div><div class="hmv">${totalDesp} m</div><div class="hms">solo material &lt; 0.5 m</div></div>`
 
   if(chartAprov)chartAprov.destroy();if(chartTubos)chartTubos.destroy();if(chartDesp)chartDesp.destroy()
 
-  // Separar R8 y R16 para el gráfico de aprovechamiento
   const dataSheer=groupBy(data.filter(r=>r.linea==='SHEER'),currentPeriod)
   const dataEnroll=groupBy(data.filter(r=>r.linea==='ENROLLABLE'),currentPeriod)
   const allLabels=[...new Set([...dataSheer.map(g=>g.label),...dataEnroll.map(g=>g.label)])]
@@ -604,7 +604,7 @@ function renderLotesTabla(data){
   recent.forEach(row=>{
     const ap=parseFloat(row.aprovechamiento),cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
     const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
-    const linea=row.linea||'R8',paquete=row.paquete||''
+    const linea=row.linea||'',paquete=row.paquete||''
     const etiqueta=linea+(paquete?' — '+paquete:'')
     const cortes=row.cortes||{}
     const r8tubos=Array.isArray(cortes.r8)?cortes.r8:[]
@@ -620,7 +620,7 @@ function renderLotesTabla(data){
           <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
           <span class="r8-badge">R8: ${cantR8}</span>
           <span class="r16-badge">R16: ${cantR16}</span>
-          <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(2)} m desp.</span>
+          <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(3)} m descarte</span>
         </div>
         <div class="lote-actions" onclick="event.stopPropagation()">
           <button class="btn-sm btn-red" onclick="eliminarLote(${row.id})">Eliminar</button>
@@ -678,7 +678,6 @@ async function eliminarCorteHist(loteId,tipo,tuboIdx,corteIdx){
 
 function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab').forEach(e=>e.classList.remove('active'));el.classList.add('active');loadHistorico()}
 
-// ── REMITOS ────────────────────────────────────────────────
 async function cargarSelectLotes(){
   if(!sb)return
   const{data}=await sb.from('historial').select('id,fecha,tubos_nuevos,aprovechamiento,linea,paquete').order('fecha',{ascending:false})
@@ -722,7 +721,7 @@ function renderRemito(lote){
     <div class="metric"><div class="ml">Tubos nuevos</div><div class="mv">${lote.tubos_nuevos}</div></div>
     <div class="metric"><div class="ml">Retazos usados</div><div class="mv">${lote.retazos_usados}</div></div>
     <div class="metric"><div class="ml">Aprovechamiento</div><div class="mv">${parseFloat(lote.aprovechamiento).toFixed(1)}%</div></div>
-    <div class="metric"><div class="ml">Desperdicio</div><div class="mv">${parseFloat(lote.metros_desperdicio).toFixed(2)} m</div></div>
+    <div class="metric"><div class="ml">Descarte real</div><div class="mv">${parseFloat(lote.metros_desperdicio).toFixed(3)} m</div></div>
   </div>`
 
   if(r8tubos.length){
@@ -769,7 +768,6 @@ function generarPDF(){
   const r16tubos=Array.isArray(cortes.r16)?cortes.r16:[]
   const lm=15,rm=195,w=180
 
-  // ENCABEZADO
   doc.setFillColor(29,158,117)
   doc.rect(0,0,210,20,'F')
   doc.setTextColor(255,255,255)
@@ -777,7 +775,7 @@ function generarPDF(){
   doc.text('PANORAMA PERSIANAS',lm,9)
   doc.setFontSize(9);doc.setFont('helvetica','normal')
   doc.text('Orden de corte — '+etiqueta,lm,15)
-  doc.text('Fecha: '+fecha+'   |   Aprov: '+parseFloat(lote.aprovechamiento).toFixed(1)+'%   |   Desp: '+parseFloat(lote.metros_desperdicio).toFixed(2)+' m',rm,9,{align:'right'})
+  doc.text('Fecha: '+fecha+'   |   Aprov: '+parseFloat(lote.aprovechamiento).toFixed(1)+'%   |   Descarte: '+parseFloat(lote.metros_desperdicio).toFixed(3)+' m',rm,9,{align:'right'})
   doc.text('Lote #'+lote.id,rm,15,{align:'right'})
 
   let y=26
@@ -786,7 +784,6 @@ function generarPDF(){
   function renderSeccionPDF(tubos,titulo,colorR,colorG,colorB){
     if(!tubos.length)return
     if(y+10>287){doc.addPage();y=15}
-    // Título sección
     doc.setFillColor(colorR,colorG,colorB)
     doc.rect(lm,y,w,7,'F')
     doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10)
