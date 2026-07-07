@@ -123,6 +123,45 @@
   .filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .filter-btn{padding:4px 12px;border-radius:99px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-size:12px;cursor:pointer;}
   .filter-btn.active{background:var(--text);color:var(--bg);border-color:transparent;}
+
+  /* ── Panel análisis de umbral ── */
+  .umbral-panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;}
+  .umbral-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .umbral-title{font-size:14px;font-weight:600;}
+  .umbral-subtitle{font-size:12px;color:var(--text2);margin-top:2px;}
+  .umbral-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:700px){.umbral-grid{grid-template-columns:1fr;}}
+  .umbral-card{background:var(--bg2);border-radius:var(--r);padding:14px 16px;}
+  .umbral-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
+  .umbral-card-title.r8{color:#1D9E75;}.umbral-card-title.r16{color:#7B4FD4;}
+  .umbral-stat{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);}
+  .umbral-stat:last-of-type{border-bottom:none;}
+  .umbral-stat-label{font-size:12px;color:var(--text2);}
+  .umbral-stat-value{font-size:13px;font-weight:600;font-family:'Consolas',monospace;}
+  .umbral-bar-wrap{margin:10px 0 4px;}
+  .umbral-bar-track{height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;position:relative;}
+  .umbral-bar-fill{height:100%;border-radius:5px;transition:width 0.5s ease;}
+  .umbral-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px;}
+  .umbral-suggestion{margin-top:14px;padding:12px 14px;border-radius:var(--rs);display:flex;align-items:flex-start;gap:10px;}
+  .umbral-suggestion.ok{background:var(--gl);color:var(--gt);}
+  .umbral-suggestion.warn{background:var(--al);color:var(--at);}
+  .umbral-suggestion.info{background:var(--bl);color:var(--bt);}
+  .umbral-suggestion-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+  .umbral-suggestion-text{font-size:12px;line-height:1.5;}
+  .umbral-suggestion-text strong{font-weight:600;}
+  .umbral-hist{display:flex;align-items:flex-end;gap:2px;height:48px;margin:10px 0 4px;}
+  .umbral-hist-bar{flex:1;border-radius:2px 2px 0 0;min-width:6px;transition:height 0.3s;}
+  .umbral-hist-bar.r8{background:rgba(29,158,117,0.6);}
+  .umbral-hist-bar.r16{background:rgba(123,79,212,0.6);}
+  .umbral-hist-bar.r8.umbral-zone{background:rgba(226,75,74,0.5);}
+  .umbral-hist-bar.r16.umbral-zone{background:rgba(226,75,74,0.5);}
+  .umbral-hist-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);}
+  .umbral-nodata{text-align:center;padding:16px;color:var(--text3);font-size:12px;}
+  .btn-apply-umbral{font-size:12px;padding:5px 12px;background:var(--green);color:white;border:none;border-radius:var(--rs);cursor:pointer;font-weight:500;}
+  .btn-apply-umbral:hover{background:#178a64;}
+  .umbral-percentil-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .pct-chip{font-size:11px;padding:3px 8px;border-radius:99px;background:var(--bg3);color:var(--text2);font-family:'Consolas',monospace;border:0.5px solid var(--border);cursor:pointer;}
+  .pct-chip.active{background:var(--text);color:var(--bg);border-color:transparent;}
 </style>
 </head>
 <body>
@@ -170,7 +209,7 @@
         <option value="SHEER">SHEER</option>
         <option value="ENROLLABLE">ENROLLABLE</option>
       </select>
-      <input type="text" id="paquete-input" placeholder="PQ1, PQ2, PQ3..." style="text-transform:uppercase;" maxlength="10"/>
+      <input type="text" id="paquete-input" placeholder="PQ1, PQ2..." style="text-transform:uppercase;" maxlength="10"/>
     </div>
   </div>
 
@@ -224,6 +263,19 @@
     <button class="period-tab" onclick="setPeriod('mes',this)">Por mes</button>
   </div>
   <div id="hist-metrics" class="hist-metrics"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+
+  <!-- PANEL DE ANÁLISIS DE UMBRAL -->
+  <div class="umbral-panel">
+    <div class="umbral-header">
+      <div>
+        <div class="umbral-title">🔍 Análisis de umbral mínimo de retazo</div>
+        <div class="umbral-subtitle">Calculado a partir de todos los cortes registrados en el historial</div>
+      </div>
+      <button onclick="calcularUmbral()" style="font-size:12px;padding:6px 14px;">Recalcular</button>
+    </div>
+    <div id="umbral-contenido"><div class="umbral-nodata">Cargando análisis...</div></div>
+  </div>
+
   <div class="charts-grid">
     <div class="chart-card full"><div class="chart-title">% aprovechamiento (SHEER vs ENROLLABLE)</div><div class="chart-wrap"><canvas id="chart-aprov"></canvas></div></div>
     <div class="chart-card"><div class="chart-title">Tubos usados</div><div class="chart-wrap"><canvas id="chart-tubos"></canvas></div></div>
@@ -253,7 +305,19 @@
 </div>
 
 <script>
-const LONGITUD_TUBO=6.05, MIN_RETAZO=0.5, STORAGE_KEY='supabase_config'
+const LONGITUD_TUBO=6.05, STORAGE_KEY='supabase_config'
+
+// Umbrales de retazo — se pueden ajustar desde el análisis histórico
+// Se persisten en localStorage bajo la clave 'umbrales_retazo'
+let MIN_RETAZO_R8=0.5, MIN_RETAZO_R16=1.5
+;(function(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('umbrales_retazo')||'{}')
+    if(saved.r8&&saved.r8>0) MIN_RETAZO_R8=saved.r8
+    if(saved.r16&&saved.r16>0) MIN_RETAZO_R16=saved.r16
+  }catch(e){}
+})()
+function minRetazo(tipo){ return tipo==='r16' ? MIN_RETAZO_R16 : MIN_RETAZO_R8 }
 
 // Offset unificado 0.023 — máximos varían según línea
 const CFG={
@@ -454,12 +518,13 @@ function greedyPack(cuts,len,invCopy){
   return{tubos,usedIdx}
 }
 
-function calcMetrics(tubos,invCopy,usedIdx,pedidosList,len){
+function calcMetrics(tipo,tubos,invCopy,usedIdx,pedidosList,len){
+  const mr=minRetazo(tipo)
   const totalNuevos=tubos.filter(t=>!t.fromInv).length
   const totalMat=r3(totalNuevos*len+usedIdx.reduce((a,i)=>a+invCopy[i],0))
-  const totalDesp=r3(tubos.reduce((a,t)=>a+(t.desp<MIN_RETAZO?t.desp:0),0))
+  const totalDesp=r3(tubos.reduce((a,t)=>a+(t.desp<mr?t.desp:0),0))
   const aprov=totalMat>0?((totalMat-totalDesp)/totalMat*100).toFixed(1):'0.0'
-  const retGen=tubos.filter(t=>t.desp>=MIN_RETAZO).length
+  const retGen=tubos.filter(t=>t.desp>=mr).length
   return{totalNuevos,totalMat,totalDesp,aprov,retGen}
 }
 
@@ -475,16 +540,17 @@ function renderSeccion(tipo,tubos,metrics){
     </div>`
 
   tubos.forEach((t,idx)=>{
+    const mr=minRetazo(tipo)
     const pct=v=>((v/t.rs)*100).toFixed(1)
-    const rp=t.desp>=MIN_RETAZO?parseFloat(pct(t.desp)):0
-    const wp=t.desp<MIN_RETAZO?parseFloat(pct(t.desp)):0
+    const rp=t.desp>=mr?parseFloat(pct(t.desp)):0
+    const wp=t.desp<mr?parseFloat(pct(t.desp)):0
     html+=`<div class="tube-card${t.fromInv?' fi':''}">
       <div class="tube-head">
         <div class="tube-name">
           <strong>Grupo ${idx+1}</strong>
           ${t.fromInv?'<span class="badge blue">Retazo '+t.rs.toFixed(3)+' m</span>':'<span class="badge green">Tubo nuevo</span>'}
         </div>
-        <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=MIN_RETAZO?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ inv.':'→ desc.'}</span></div>
+        <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=mr?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=mr?'→ inv.':'→ desc.'}</span></div>
       </div>
       <div class="tube-bar">
         <div class="seg used" style="width:${pct(t.usado)}%">${parseFloat(pct(t.usado))>8?t.usado.toFixed(2)+' m':''}</div>
@@ -509,11 +575,11 @@ function optimizar(){
 
   const resR8=greedyPack(pedidos.r8,LONGITUD_TUBO,[...inventario.r8])
   const resR16=greedyPack(pedidos.r16,LONGITUD_TUBO,[...inventario.r16])
-  const mR8=pedidos.r8.length?calcMetrics(resR8.tubos,[...inventario.r8],resR8.usedIdx,pedidos.r8,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
-  const mR16=pedidos.r16.length?calcMetrics(resR16.tubos,[...inventario.r16],resR16.usedIdx,pedidos.r16,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
+  const mR8=pedidos.r8.length?calcMetrics('r8',resR8.tubos,[...inventario.r8],resR8.usedIdx,pedidos.r8,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
+  const mR16=pedidos.r16.length?calcMetrics('r16',resR16.tubos,[...inventario.r16],resR16.usedIdx,pedidos.r16,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
 
-  const invR8Final=[...inventario.r8.filter((_,i)=>!resR8.usedIdx.includes(i)),...resR8.tubos.filter(t=>t.desp>=MIN_RETAZO).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO).sort((a,b)=>b-a)
-  const invR16Final=[...inventario.r16.filter((_,i)=>!resR16.usedIdx.includes(i)),...resR16.tubos.filter(t=>t.desp>=MIN_RETAZO).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO).sort((a,b)=>b-a)
+  const invR8Final=[...inventario.r8.filter((_,i)=>!resR8.usedIdx.includes(i)),...resR8.tubos.filter(t=>t.desp>=MIN_RETAZO_R8).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO_R8).sort((a,b)=>b-a)
+  const invR16Final=[...inventario.r16.filter((_,i)=>!resR16.usedIdx.includes(i)),...resR16.tubos.filter(t=>t.desp>=MIN_RETAZO_R16).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO_R16).sort((a,b)=>b-a)
 
   let html=`<div class="divider"></div>
   <div class="section-title">Resultado — <span class="linea-badge linea-${linea.toLowerCase()}" style="font-size:12px;">${etiqueta}</span></div>`
@@ -574,7 +640,173 @@ async function loadHistorico(){
   if(!sb)return
   const{data,error}=await sb.from('historial').select('*').order('fecha',{ascending:true})
   if(error||!data){document.getElementById('hist-metrics').innerHTML='<div class="empty">Sin datos aún.</div>';return}
-  historialData=data;renderHistorico(data)
+  historialData=data;renderHistorico(data);calcularUmbral()
+}
+
+// ── ANÁLISIS DE UMBRAL ────────────────────────────────────────────────────────
+
+function extraerCortes(data, tipo){
+  // Extrae todos los cortes de un tipo (r8/r16) del historial completo
+  const cortes=[]
+  data.forEach(row=>{
+    const tubos=Array.isArray(row.cortes?.[tipo])?row.cortes[tipo]:[]
+    tubos.forEach(tubo=>{
+      if(Array.isArray(tubo.cuts))tubo.cuts.forEach(c=>cortes.push(parseFloat(c)))
+    })
+  })
+  return cortes.filter(c=>!isNaN(c)&&c>0).sort((a,b)=>a-b)
+}
+
+function percentil(arr, p){
+  if(!arr.length)return 0
+  const idx=Math.ceil((p/100)*arr.length)-1
+  return arr[Math.max(0,Math.min(idx,arr.length-1))]
+}
+
+function calcularEstadisticas(cortes){
+  if(!cortes.length)return null
+  const sorted=[...cortes].sort((a,b)=>a-b)
+  const n=sorted.length
+  const min=sorted[0]
+  const max=sorted[n-1]
+  const avg=r3(sorted.reduce((a,b)=>a+b,0)/n)
+  const p5=percentil(sorted,5)
+  const p10=percentil(sorted,10)
+  const p25=percentil(sorted,25)
+  const median=percentil(sorted,50)
+  // Histograma: 10 buckets entre min y max
+  const buckets=10
+  const step=(max-min)/buckets||0.1
+  const hist=Array(buckets).fill(0)
+  sorted.forEach(v=>{
+    let b=Math.floor((v-min)/step)
+    if(b>=buckets)b=buckets-1
+    hist[b]++
+  })
+  return{n,min,max,avg,p5,p10,p25,median,hist,step,sorted}
+}
+
+function calcularUmbral(){
+  const el=document.getElementById('umbral-contenido')
+  if(!historialData.length){
+    el.innerHTML='<div class="umbral-nodata">No hay datos en el historial todavía. Procesá algunos lotes primero.</div>'
+    return
+  }
+
+  const cortesR8=extraerCortes(historialData,'r8')
+  const cortesR16=extraerCortes(historialData,'r16')
+
+  if(!cortesR8.length&&!cortesR16.length){
+    el.innerHTML='<div class="umbral-nodata">Los lotes del historial no tienen detalle de cortes guardado.</div>'
+    return
+  }
+
+  const stR8=calcularEstadisticas(cortesR8)
+  const stR16=calcularEstadisticas(cortesR16)
+
+  function renderMecanismo(tipo, st, colorClass, umbralActual){
+    if(!st)return`<div class="umbral-card"><div class="umbral-card-title ${colorClass}">${tipo.toUpperCase()}</div><div class="umbral-nodata">Sin cortes registrados.</div></div>`
+
+    // Sugerencia de umbral = percentil 5% redondeado hacia abajo a 0.05m
+    const umbralSugerido=Math.floor(st.p5/0.05)*0.05
+    const umbralRedondeado=r3(umbralSugerido)
+    const ahorroEstimado=st.sorted.filter(c=>c<umbralActual&&c>=umbralRedondeado).length
+    const cortesDebajoCurrent=st.sorted.filter(c=>c<umbralActual).length
+    const pctDebajo=r2((cortesDebajoCurrent/st.n)*100)
+
+    // Estado de la sugerencia
+    let sugerencia, sugerenciaClass
+    if(Math.abs(umbralRedondeado-umbralActual)<0.05){
+      sugerencia=`Tu umbral actual de <strong>${umbralActual.toFixed(2)}m</strong> está bien ajustado. El ${pctDebajo}% de los cortes históricos quedó por debajo de él.`
+      sugerenciaClass='ok'
+    } else if(umbralRedondeado>umbralActual){
+      sugerencia=`Podés <strong>subir el umbral a ${umbralRedondeado.toFixed(2)}m</strong>. El corte más chico registrado fue <strong>${st.min.toFixed(3)}m</strong> y el P5 es ${st.p5.toFixed(3)}m — retazos menores a ${umbralRedondeado.toFixed(2)}m difícilmente se van a usar.`
+      sugerenciaClass='warn'
+    } else {
+      sugerencia=`Tu umbral actual (${umbralActual.toFixed(2)}m) es más alto que el P5 histórico (${st.p5.toFixed(3)}m). Estás descartando retazos que sí podrían usarse. Considerá <strong>bajarlo a ${umbralRedondeado.toFixed(2)}m</strong>.`
+      sugerenciaClass='info'
+    }
+
+    // Histograma visual
+    const maxH=Math.max(...st.hist,1)
+    const histBars=st.hist.map((v,i)=>{
+      const barMin=r3(st.min+i*st.step)
+      const esBajo=barMin<umbralActual
+      return`<div class="umbral-hist-bar ${colorClass}${esBajo?' umbral-zone':''}" style="height:${Math.round((v/maxH)*100)}%" title="${barMin.toFixed(2)}–${r3(barMin+st.step).toFixed(2)}m: ${v} cortes"></div>`
+    }).join('')
+
+    // Chips de percentiles para aplicar
+    const chips=[
+      {label:'Mínimo abs.',val:Math.floor(st.min/0.05)*0.05},
+      {label:'P5',val:Math.floor(st.p5/0.05)*0.05},
+      {label:'P10',val:Math.floor(st.p10/0.05)*0.05},
+      {label:'P25',val:Math.floor(st.p25/0.05)*0.05},
+    ].filter((c,i,arr)=>arr.findIndex(x=>x.val===c.val)===i)
+
+    return`
+    <div class="umbral-card">
+      <div class="umbral-card-title ${colorClass}">${tipo.toUpperCase()} — ${st.n} cortes analizados</div>
+      <div class="umbral-stat"><span class="umbral-stat-label">Corte mínimo registrado</span><span class="umbral-stat-value">${st.min.toFixed(3)} m</span></div>
+      <div class="umbral-stat"><span class="umbral-stat-label">Corte máximo registrado</span><span class="umbral-stat-value">${st.max.toFixed(3)} m</span></div>
+      <div class="umbral-stat"><span class="umbral-stat-label">Promedio</span><span class="umbral-stat-value">${st.avg.toFixed(3)} m</span></div>
+      <div class="umbral-stat"><span class="umbral-stat-label">Mediana (P50)</span><span class="umbral-stat-value">${st.median.toFixed(3)} m</span></div>
+      <div class="umbral-stat"><span class="umbral-stat-label">Percentil 5% (P5)</span><span class="umbral-stat-value">${st.p5.toFixed(3)} m</span></div>
+      <div class="umbral-stat"><span class="umbral-stat-label">Percentil 10% (P10)</span><span class="umbral-stat-value">${st.p10.toFixed(3)} m</span></div>
+      <div class="umbral-stat" style="border-bottom:none;">
+        <span class="umbral-stat-label">Umbral activo</span>
+        <span class="umbral-stat-value" style="color:var(--green)">${umbralActual.toFixed(2)} m</span>
+      </div>
+
+      <div style="font-size:11px;color:var(--text3);margin:10px 0 2px;">Distribución de cortes (rojo = bajo umbral actual)</div>
+      <div class="umbral-hist">${histBars}</div>
+      <div class="umbral-hist-labels"><span>${st.min.toFixed(2)}m</span><span>${st.max.toFixed(2)}m</span></div>
+
+      <div style="font-size:11px;color:var(--text3);margin:10px 0 4px;">Aplicar umbral basado en:</div>
+      <div class="umbral-percentil-row">
+        ${chips.map(c=>`<span class="pct-chip${Math.abs(c.val-umbralActual)<0.01?' active':''}" onclick="aplicarUmbral('${tipo}',${c.val},this)" title="${c.label}">${c.label}: ${c.val.toFixed(2)}m</span>`).join('')}
+      </div>
+
+      <div class="umbral-suggestion ${sugerenciaClass}">
+        <div class="umbral-suggestion-icon">${sugerenciaClass==='ok'?'✓':sugerenciaClass==='warn'?'↑':'↓'}</div>
+        <div class="umbral-suggestion-text">${sugerencia}</div>
+      </div>
+    </div>`
+  }
+
+  el.innerHTML=`<div class="umbral-grid">
+    ${renderMecanismo('r8',stR8,'r8',MIN_RETAZO_R8)}
+    ${renderMecanismo('r16',stR16,'r16',MIN_RETAZO_R16)}
+  </div>`
+}
+
+function aplicarUmbral(tipo, valor, chipEl){
+  const v=parseFloat(valor)
+  if(isNaN(v)||v<=0)return
+
+  // Actualizar variable live
+  if(tipo==='r8') MIN_RETAZO_R8=v
+  else MIN_RETAZO_R16=v
+
+  // Persistir en localStorage
+  try{
+    const umbrales=JSON.parse(localStorage.getItem('umbrales_retazo')||'{}')
+    umbrales[tipo]=v
+    localStorage.setItem('umbrales_retazo',JSON.stringify(umbrales))
+  }catch(e){}
+
+  // Resaltar chip activo
+  chipEl.closest('.umbral-percentil-row').querySelectorAll('.pct-chip').forEach(c=>c.classList.remove('active'))
+  chipEl.classList.add('active')
+
+  // Banner de confirmación
+  const banner=document.createElement('div')
+  banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1D9E75;color:white;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25);transition:opacity 0.3s;'
+  banner.textContent=`✓ Umbral ${tipo.toUpperCase()} → ${v.toFixed(2)}m guardado. Se aplica en los próximos lotes.`
+  document.body.appendChild(banner)
+  setTimeout(()=>{banner.style.opacity='0';setTimeout(()=>banner.remove(),300)},2800)
+
+  // Recalcular el panel para reflejar el nuevo umbral activo
+  setTimeout(()=>calcularUmbral(),100)
 }
 
 function setFiltro(f,el){
