@@ -869,56 +869,74 @@ function renderLotesTabla(data){
   const recent=[...data].reverse()
   let html=''
   recent.forEach(row=>{
-    const ap=parseFloat(row.aprovechamiento),cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
-    const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
-    const linea=row.linea||'',paquete=row.paquete||''
-    const etiqueta=linea+(paquete?' — '+paquete:'')
-    const cortes=row.cortes||{}
-    const r8tubos=Array.isArray(cortes.r8)?cortes.r8:[]
-    const r16tubos=Array.isArray(cortes.r16)?cortes.r16:[]
-    const cantR8=r8tubos.reduce((a,t)=>a+(t.cuts?.length||0),0)
-    const cantR16=r16tubos.reduce((a,t)=>a+(t.cuts?.length||0),0)
+    try{
+      const ap=parseFloat(row.aprovechamiento)||0
+      const cls=ap>=85?'aprov-high':ap>=70?'aprov-mid':'aprov-low'
+      const fecha=new Date(row.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      const linea=row.linea||'',paquete=row.paquete||''
+      const etiqueta=linea+(paquete?' — '+paquete:'')
+      const cortes=row.cortes||{}
+      const r8tubos=Array.isArray(cortes.r8)?cortes.r8:[]
+      const r16tubos=Array.isArray(cortes.r16)?cortes.r16:[]
+      const cantR8=r8tubos.reduce((a,t)=>a+(Array.isArray(t.cuts)?t.cuts.length:0),0)
+      const cantR16=r16tubos.reduce((a,t)=>a+(Array.isArray(t.cuts)?t.cuts.length:0),0)
+      const desp=parseFloat(row.metros_desperdicio)||0
 
-    html+=`<div class="lote-row" id="lote-${row.id}">
-      <div class="lote-header" onclick="toggleLote(${row.id})">
-        <div class="lote-info">
-          <span style="font-size:13px;font-weight:500;">${fecha}</span>
-          <span class="linea-badge linea-${linea.toLowerCase()}">${etiqueta}</span>
-          <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
-          <span class="r8-badge">R8: ${cantR8}</span>
-          <span class="r16-badge">R16: ${cantR16}</span>
-          <span style="font-size:12px;color:var(--text2)">${parseFloat(row.metros_desperdicio).toFixed(3)} m descarte</span>
+      html+=`<div class="lote-row" id="lote-${row.id}">
+        <div class="lote-header" onclick="toggleLote(${row.id})">
+          <div class="lote-info">
+            <span style="font-size:13px;font-weight:500;">${fecha}</span>
+            <span class="linea-badge linea-${linea.toLowerCase()}">${etiqueta}</span>
+            <span class="aprov-pill ${cls}">${ap.toFixed(1)}%</span>
+            <span class="r8-badge">R8: ${cantR8}</span>
+            <span class="r16-badge">R16: ${cantR16}</span>
+            <span style="font-size:12px;color:var(--text2)">${desp.toFixed(3)} m descarte</span>
+          </div>
+          <div class="lote-actions" onclick="event.stopPropagation()">
+            <button class="btn-sm btn-red" onclick="eliminarLote(${row.id})">Eliminar</button>
+            <span style="color:var(--text3);font-size:16px;">›</span>
+          </div>
         </div>
-        <div class="lote-actions" onclick="event.stopPropagation()">
-          <button class="btn-sm btn-red" onclick="eliminarLote(${row.id})">Eliminar</button>
-          <span style="color:var(--text3);font-size:16px;">›</span>
+        <div class="lote-body" id="body-${row.id}">
+          ${r8tubos.length?`<div style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:6px;">● R8</div>${renderTubosDetalle(r8tubos,row.id,'r8')}`:'' }
+          ${r16tubos.length?`<div style="font-size:12px;font-weight:700;color:#7B4FD4;margin:10px 0 6px;">● R16</div>${renderTubosDetalle(r16tubos,row.id,'r16')}`:'' }
+          ${!r8tubos.length&&!r16tubos.length?'<div class="empty">Sin detalle de cortes.</div>':''}
         </div>
-      </div>
-      <div class="lote-body" id="body-${row.id}">
-        ${r8tubos.length?`<div style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:6px;">● R8</div>${renderTubosDetalle(r8tubos,row.id,'r8')}`:'' }
-        ${r16tubos.length?`<div style="font-size:12px;font-weight:700;color:#7B4FD4;margin:10px 0 6px;">● R16</div>${renderTubosDetalle(r16tubos,row.id,'r16')}`:'' }
-      </div>
-    </div>`
+      </div>`
+    }catch(e){
+      console.error('Error rendering lote',row.id,e)
+    }
   })
   document.getElementById('hist-lotes').innerHTML=html||'<div class="empty">Sin lotes registrados.</div>'
 }
 
 function renderTubosDetalle(tubos,loteId,tipo){
   if(!tubos||!tubos.length)return'<div class="empty">Sin detalle.</div>'
-  return tubos.map((tubo,ti)=>`
-    <div class="tubo-bloque">
-      <div class="tubo-bloque-header">
-        <span>Grupo ${ti+1}</span>
-        <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo '+tubo.rs.toFixed(3)+' m':'Tubo nuevo'}</span>
-        <span style="font-size:12px;font-weight:400;color:var(--text2)">${tubo.desp>=minRetazo(tipo)?'Sob. '+tubo.desp.toFixed(3)+' m → inv.':'Desc. '+tubo.desp.toFixed(3)+' m'}</span>
-      </div>
-      ${tubo.cuts.map((c,ci)=>`
-        <div class="corte-item">
-          <span style="color:var(--text3);font-size:12px;min-width:50px;">Corte ${ci+1}</span>
-          <strong>${c.toFixed(3)} m</strong>
-          <button class="btn-sm btn-red" onclick="eliminarCorteHist(${loteId},'${tipo}',${ti},${ci})">×</button>
-        </div>`).join('')}
-    </div>`).join('')
+  try{
+    return tubos.map((tubo,ti)=>{
+      const desp=parseFloat(tubo.desp)||0
+      const rs=parseFloat(tubo.rs)||0
+      const mr=minRetazo(tipo)
+      const cuts=Array.isArray(tubo.cuts)?tubo.cuts:[]
+      return`
+      <div class="tubo-bloque">
+        <div class="tubo-bloque-header">
+          <span>Grupo ${ti+1}</span>
+          <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo '+(rs>0?rs.toFixed(3):'?')+' m':'Tubo nuevo'}</span>
+          <span style="font-size:12px;font-weight:400;color:var(--text2)">${desp>=mr?'Sob. '+desp.toFixed(3)+' m → inv.':'Desc. '+desp.toFixed(3)+' m'}</span>
+        </div>
+        ${cuts.map((c,ci)=>`
+          <div class="corte-item">
+            <span style="color:var(--text3);font-size:12px;min-width:50px;">Corte ${ci+1}</span>
+            <strong>${parseFloat(c).toFixed(3)} m</strong>
+            <button class="btn-sm btn-red" onclick="eliminarCorteHist(${loteId},'${tipo}',${ti},${ci})">×</button>
+          </div>`).join('')}
+      </div>`
+    }).join('')
+  }catch(e){
+    console.error('renderTubosDetalle error:',e)
+    return'<div class="empty">Error al mostrar detalle.</div>'
+  }
 }
 
 function toggleLote(id){document.getElementById('body-'+id).classList.toggle('open')}
@@ -964,12 +982,22 @@ async function cargarSelectLotes(){
 async function cargarLoteRemito(){
   const id=document.getElementById('lote-select').value
   if(!id){document.getElementById('remito-contenido').innerHTML='<div class="empty">Seleccioná un lote.</div>';return}
-  const{data}=await sb.from('historial').select('*').eq('id',id).single()
-  if(!data)return
-  loteActualRemito=data;renderRemito(data)
+  try{
+    const{data,error}=await sb.from('historial').select('*').eq('id',id).single()
+    if(error||!data){
+      document.getElementById('remito-contenido').innerHTML='<div class="empty">No se pudo cargar el lote.</div>'
+      return
+    }
+    loteActualRemito=data
+    renderRemito(data)
+  }catch(e){
+    console.error('cargarLoteRemito error:',e)
+    document.getElementById('remito-contenido').innerHTML='<div class="empty">Error al cargar: '+e.message+'</div>'
+  }
 }
 
 function renderRemito(lote){
+  try{
   const fecha=new Date(lote.fecha).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
   const linea=lote.linea||'',paquete=lote.paquete||''
   const etiqueta=linea+(paquete?' — '+paquete:'')
@@ -985,41 +1013,57 @@ function renderRemito(lote){
     </div>
   </div>
   <div class="metrics" style="margin-bottom:16px;">
-    <div class="metric"><div class="ml">Tubos nuevos</div><div class="mv">${lote.tubos_nuevos}</div></div>
-    <div class="metric"><div class="ml">Retazos usados</div><div class="mv">${lote.retazos_usados}</div></div>
-    <div class="metric"><div class="ml">Aprovechamiento</div><div class="mv">${parseFloat(lote.aprovechamiento).toFixed(1)}%</div></div>
-    <div class="metric"><div class="ml">Descarte real</div><div class="mv">${parseFloat(lote.metros_desperdicio).toFixed(3)} m</div></div>
+    <div class="metric"><div class="ml">Tubos nuevos</div><div class="mv">${lote.tubos_nuevos||0}</div></div>
+    <div class="metric"><div class="ml">Retazos usados</div><div class="mv">${lote.retazos_usados||0}</div></div>
+    <div class="metric"><div class="ml">Aprovechamiento</div><div class="mv">${parseFloat(lote.aprovechamiento||0).toFixed(1)}%</div></div>
+    <div class="metric"><div class="ml">Descarte real</div><div class="mv">${parseFloat(lote.metros_desperdicio||0).toFixed(3)} m</div></div>
   </div>`
+
+  function bloquesTubo(tubos, tipo){
+    return tubos.map((t,i)=>{
+      const desp=parseFloat(t.desp)||0
+      const rs=parseFloat(t.rs)||0
+      const mr=minRetazo(tipo)
+      const cuts=Array.isArray(t.cuts)?t.cuts:[]
+      return`<div class="tube-card${t.fromInv?' fi':''}">
+        <div class="tube-head">
+          <div class="tube-name"><strong>Grupo ${i+1}</strong>
+            <span class="badge ${t.fromInv?'blue':'green'}">${t.fromInv?'Retazo '+(rs>0?rs.toFixed(3):'?')+' m':'Tubo nuevo'}</span>
+          </div>
+          <div class="tube-meta">${(parseFloat(t.usado)||0).toFixed(3)} m ·
+            <span style="color:${desp>=mr?'var(--bt)':'var(--text3)'}">
+              ${desp.toFixed(3)} m ${desp>=mr?'→ inv.':'→ desc.'}
+            </span>
+          </div>
+        </div>
+        ${cuts.map((c,ci)=>`<div class="corte-item">
+          <span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span>
+          <strong style="font-size:15px;">${parseFloat(c).toFixed(3)} m</strong>
+          <span></span>
+        </div>`).join('')}
+      </div>`
+    }).join('')
+  }
 
   if(r8tubos.length){
     html+=`<div class="mec-section r8"><div class="mec-section-title r8-color">● R8</div>`
-    r8tubos.forEach((t,i)=>{
-      html+=`<div class="tube-card${t.fromInv?' fi':''}">
-        <div class="tube-head">
-          <div class="tube-name"><strong>Grupo ${i+1}</strong><span class="badge ${t.fromInv?'blue':'green'}">${t.fromInv?'Retazo '+t.rs.toFixed(3)+' m':'Tubo nuevo'}</span></div>
-          <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=minRetazo('r8')?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=minRetazo('r8')?'→ inv.':'→ desc.'}</span></div>
-        </div>
-        ${t.cuts.map((c,ci)=>`<div class="corte-item"><span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span><strong style="font-size:15px;">${c.toFixed(3)} m</strong><span></span></div>`).join('')}
-      </div>`
-    })
+    html+=bloquesTubo(r8tubos,'r8')
     html+=`</div>`
   }
-
   if(r16tubos.length){
     html+=`<div class="mec-section r16"><div class="mec-section-title r16-color">● R16</div>`
-    r16tubos.forEach((t,i)=>{
-      html+=`<div class="tube-card${t.fromInv?' fi':''}">
-        <div class="tube-head">
-          <div class="tube-name"><strong>Grupo ${i+1}</strong><span class="badge ${t.fromInv?'blue':'green'}">${t.fromInv?'Retazo '+t.rs.toFixed(3)+' m':'Tubo nuevo'}</span></div>
-          <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=minRetazo('r16')?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=minRetazo('r16')?'→ inv.':'→ desc.'}</span></div>
-        </div>
-        ${t.cuts.map((c,ci)=>`<div class="corte-item"><span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span><strong style="font-size:15px;">${c.toFixed(3)} m</strong><span></span></div>`).join('')}
-      </div>`
-    })
+    html+=bloquesTubo(r16tubos,'r16')
     html+=`</div>`
+  }
+  if(!r8tubos.length&&!r16tubos.length){
+    html+='<div class="empty">Este lote no tiene detalle de cortes guardado.</div>'
   }
 
   document.getElementById('remito-contenido').innerHTML=html
+  }catch(e){
+    console.error('renderRemito error:',e)
+    document.getElementById('remito-contenido').innerHTML='<div class="empty">Error al renderizar remito: '+e.message+'</div>'
+  }
 }
 
 function generarPDF(){
