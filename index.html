@@ -166,7 +166,7 @@
   <div class="card">
     <div class="card-title">Identificación del lote</div>
     <div class="row">
-      <select id="linea-select">
+      <select id="linea-select" onchange="actualizarLimitesPorLinea()">
         <option value="SHEER">SHEER</option>
         <option value="ENROLLABLE">ENROLLABLE</option>
       </select>
@@ -176,9 +176,9 @@
 
   <div class="two-col">
     <div class="card">
-      <div class="mec-section-title r8-color">● R8 <span style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.023 m · máx 1.8 m</span></div>
+      <div class="mec-section-title r8-color">● R8 <span id="r8-hint" style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.023 m · máx 2.00 m</span></div>
       <div class="row">
-        <input type="number" id="r8-input" placeholder="Ancho cortina (m)" step="0.001" min="0.033" max="1.80"/>
+        <input type="number" id="r8-input" placeholder="Ancho cortina (m)" step="0.001" min="0.023" max="2.00"/>
         <button class="btn-green" onclick="addCorte('r8')">Agregar</button>
       </div>
       <div id="r8-error" class="err"></div>
@@ -194,9 +194,9 @@
     </div>
 
     <div class="card">
-      <div class="mec-section-title r16-color">● R16 <span style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.023 m · máx 2.60 m</span></div>
+      <div class="mec-section-title r16-color">● R16 <span id="r16-hint" style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.023 m · máx 2.90 m</span></div>
       <div class="row">
-        <input type="number" id="r16-input" placeholder="Ancho cortina (m)" step="0.001" min="0.023" max="2.64"/>
+        <input type="number" id="r16-input" placeholder="Ancho cortina (m)" step="0.001" min="0.023" max="2.90"/>
         <button class="btn-green" onclick="addCorte('r16')">Agregar</button>
       </div>
       <div id="r16-error" class="err"></div>
@@ -254,7 +254,42 @@
 
 <script>
 const LONGITUD_TUBO=6.05, MIN_RETAZO=0.5, STORAGE_KEY='supabase_config'
-const CFG={r8:{offset:0.023,max:1.80,label:'R8',color:'#1D9E75'},r16:{offset:0.023,max:2.60,label:'R16',color:'#7B4FD4'}}
+
+// Offset unificado 0.023 — máximos varían según línea
+const CFG={
+  r8: {offset:0.023, label:'R8',  color:'#1D9E75'},
+  r16:{offset:0.023, label:'R16', color:'#7B4FD4'}
+}
+// Anchos máximos de CORTINA (antes de restar offset) por línea y mecanismo
+const MAXIMOS={
+  ENROLLABLE:{ r8:1.80, r16:2.60 },
+  SHEER:     { r8:2.00, r16:2.90 }
+}
+
+function getMax(tipo){
+  const linea=document.getElementById('linea-select').value||'SHEER'
+  return MAXIMOS[linea][tipo]
+}
+function getMaxTubo(tipo){
+  // Máximo del tubo = máximo del ancho − offset
+  return Math.round((getMax(tipo) - CFG[tipo].offset)*1000)/1000
+}
+
+function actualizarLimitesPorLinea(){
+  const linea=document.getElementById('linea-select').value
+  const limites=MAXIMOS[linea]
+  ;['r8','r16'].forEach(tipo=>{
+    const maxAncho=limites[tipo]
+    const maxTubo=Math.round((maxAncho - CFG[tipo].offset)*1000)/1000
+    const inp=document.getElementById(tipo+'-input')
+    inp.max=maxAncho
+    document.getElementById(tipo+'-hint').textContent=
+      'ancho − '+CFG[tipo].offset.toFixed(3)+' m · máx '+maxAncho.toFixed(2)+' m'
+    // Limpiar errores y validar valores ya ingresados
+    document.getElementById(tipo+'-error').textContent=''
+  })
+}
+
 let sb=null, currentPeriod='dia', historialData=[], filtroActual='todos', loteActualRemito=null
 let pedidos={r8:[],r16:[]}
 let inventario={r8:[],r16:[]}
@@ -354,7 +389,9 @@ function addCorte(tipo){
   const cfg=CFG[tipo],v=parseFloat(inp.value)
   if(isNaN(v)||v<=0){err.textContent='Ingresá un ancho válido.';return}
   const c=r3(v-cfg.offset)
-  if(c>cfg.max){err.textContent='Ancho '+v+' m → tubo '+c.toFixed(3)+' m supera el máx '+cfg.label+' ('+cfg.max+' m).';return}
+  const maxTubo=getMaxTubo(tipo)
+  const maxAncho=getMax(tipo)
+  if(c>maxTubo){err.textContent='Ancho '+v+' m → tubo '+c.toFixed(3)+' m supera el máx '+cfg.label+' ('+maxAncho.toFixed(2)+' m ancho / '+maxTubo.toFixed(3)+' m tubo).';return}
   if(c<=0){err.textContent='Ancho muy pequeño.';return}
   err.textContent='';pedidos[tipo].push(c);inp.value='';inp.focus();renderPedidos(tipo)
 }
@@ -363,14 +400,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('r8-input').addEventListener('keydown',e=>{if(e.key==='Enter')addCorte('r8')})
   document.getElementById('r16-input').addEventListener('keydown',e=>{if(e.key==='Enter')addCorte('r16')})
   document.getElementById('paquete-input').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase()})
+  actualizarLimitesPorLinea() // Setear límites correctos al cargar (SHEER por defecto)
 })
 
 function addBulk(tipo){
   const raw=document.getElementById(tipo+'-bulk').value
   const cfg=CFG[tipo]
+  const maxTubo=getMaxTubo(tipo)
   const vals=raw.split(/[\s,;]+/).map(s=>parseFloat(s)).filter(n=>!isNaN(n)&&n>0)
   let sk=0
-  vals.forEach(v=>{const c=r3(v-cfg.offset);if(c>cfg.max||c<=0){sk++;return}pedidos[tipo].push(c)})
+  vals.forEach(v=>{const c=r3(v-cfg.offset);if(c>maxTubo||c<=0){sk++;return}pedidos[tipo].push(c)})
   document.getElementById(tipo+'-bulk').value=''
   document.getElementById(tipo+'-error').textContent=sk>0?sk+' ancho(s) fuera de rango omitidos.':''
   renderPedidos(tipo)
@@ -415,13 +454,10 @@ function greedyPack(cuts,len,invCopy){
   return{tubos,usedIdx}
 }
 
-// ── CORRECCIÓN: desperdicio = solo descarte real (<0.5m), aprovechamiento correcto ──
 function calcMetrics(tubos,invCopy,usedIdx,pedidosList,len){
   const totalNuevos=tubos.filter(t=>!t.fromInv).length
   const totalMat=r3(totalNuevos*len+usedIdx.reduce((a,i)=>a+invCopy[i],0))
-  // Solo cuenta como desperdicio lo que va a descarte (< MIN_RETAZO)
   const totalDesp=r3(tubos.reduce((a,t)=>a+(t.desp<MIN_RETAZO?t.desp:0),0))
-  // Aprovechamiento = (material total - descarte real) / material total
   const aprov=totalMat>0?((totalMat-totalDesp)/totalMat*100).toFixed(1):'0.0'
   const retGen=tubos.filter(t=>t.desp>=MIN_RETAZO).length
   return{totalNuevos,totalMat,totalDesp,aprov,retGen}
@@ -493,7 +529,6 @@ function optimizar(){
 
   const totalTubosNuevos=(pedidos.r8.length?mR8.totalNuevos:0)+(pedidos.r16.length?mR16.totalNuevos:0)
   const totalRetazosUsados=resR8.usedIdx.length+resR16.usedIdx.length
-  // Aprovechamiento combinado ponderado por material total
   const matR8=pedidos.r8.length?mR8.totalMat:0
   const matR16=pedidos.r16.length?mR16.totalMat:0
   const despR8=pedidos.r8.length?mR8.totalDesp:0
