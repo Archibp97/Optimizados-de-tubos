@@ -309,7 +309,7 @@ const LONGITUD_TUBO=6.05, STORAGE_KEY='supabase_config'
 
 // Umbrales de retazo — se pueden ajustar desde el análisis histórico
 // Se persisten en localStorage bajo la clave 'umbrales_retazo'
-let MIN_RETAZO_R8=0.5, MIN_RETAZO_R16=1.5
+let MIN_RETAZO_R8=0.5, MIN_RETAZO_R16=1
 ;(function(){
   try{
     const saved=JSON.parse(localStorage.getItem('umbrales_retazo')||'{}')
