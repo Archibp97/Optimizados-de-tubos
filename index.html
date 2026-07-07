@@ -910,7 +910,7 @@ function renderTubosDetalle(tubos,loteId,tipo){
       <div class="tubo-bloque-header">
         <span>Grupo ${ti+1}</span>
         <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo '+tubo.rs.toFixed(3)+' m':'Tubo nuevo'}</span>
-        <span style="font-size:12px;font-weight:400;color:var(--text2)">${tubo.desp>=MIN_RETAZO?'Sob. '+tubo.desp.toFixed(3)+' m → inv.':'Desc. '+tubo.desp.toFixed(3)+' m'}</span>
+        <span style="font-size:12px;font-weight:400;color:var(--text2)">${tubo.desp>=minRetazo(tipo)?'Sob. '+tubo.desp.toFixed(3)+' m → inv.':'Desc. '+tubo.desp.toFixed(3)+' m'}</span>
       </div>
       ${tubo.cuts.map((c,ci)=>`
         <div class="corte-item">
@@ -997,7 +997,7 @@ function renderRemito(lote){
       html+=`<div class="tube-card${t.fromInv?' fi':''}">
         <div class="tube-head">
           <div class="tube-name"><strong>Grupo ${i+1}</strong><span class="badge ${t.fromInv?'blue':'green'}">${t.fromInv?'Retazo '+t.rs.toFixed(3)+' m':'Tubo nuevo'}</span></div>
-          <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=MIN_RETAZO?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ inv.':'→ desc.'}</span></div>
+          <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=minRetazo('r8')?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=minRetazo('r8')?'→ inv.':'→ desc.'}</span></div>
         </div>
         ${t.cuts.map((c,ci)=>`<div class="corte-item"><span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span><strong style="font-size:15px;">${c.toFixed(3)} m</strong><span></span></div>`).join('')}
       </div>`
@@ -1011,7 +1011,7 @@ function renderRemito(lote){
       html+=`<div class="tube-card${t.fromInv?' fi':''}">
         <div class="tube-head">
           <div class="tube-name"><strong>Grupo ${i+1}</strong><span class="badge ${t.fromInv?'blue':'green'}">${t.fromInv?'Retazo '+t.rs.toFixed(3)+' m':'Tubo nuevo'}</span></div>
-          <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=MIN_RETAZO?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=MIN_RETAZO?'→ inv.':'→ desc.'}</span></div>
+          <div class="tube-meta">${t.usado.toFixed(3)} m · <span style="color:${t.desp>=minRetazo('r16')?'var(--bt)':'var(--text3)'}">${t.desp.toFixed(3)} m ${t.desp>=minRetazo('r16')?'→ inv.':'→ desc.'}</span></div>
         </div>
         ${t.cuts.map((c,ci)=>`<div class="corte-item"><span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span><strong style="font-size:15px;">${c.toFixed(3)} m</strong><span></span></div>`).join('')}
       </div>`
@@ -1050,6 +1050,7 @@ function generarPDF(){
 
   function renderSeccionPDF(tubos,titulo,colorR,colorG,colorB){
     if(!tubos.length)return
+    const tipoSec=titulo==='R8'?'r8':'r16'
     if(y+10>287){doc.addPage();y=15}
     doc.setFillColor(colorR,colorG,colorB)
     doc.rect(lm,y,w,7,'F')
@@ -1081,11 +1082,11 @@ function generarPDF(){
         y+=altoCorte
       })
 
-      doc.setFillColor(tubo.desp>=MIN_RETAZO?230:245,tubo.desp>=MIN_RETAZO?240:245,tubo.desp>=MIN_RETAZO?252:245)
+      doc.setFillColor(tubo.desp>=minRetazo(tipoSec)?230:245,tubo.desp>=minRetazo(tipoSec)?240:245,tubo.desp>=minRetazo(tipoSec)?252:245)
       doc.rect(lm,y,w,altoSob,'F')
       doc.setFont('helvetica','italic');doc.setFontSize(7.5)
-      doc.setTextColor(tubo.desp>=MIN_RETAZO?12:130,tubo.desp>=MIN_RETAZO?68:130,tubo.desp>=MIN_RETAZO?124:130)
-      doc.text('  Sobrante: '+tubo.desp.toFixed(3)+' m'+(tubo.desp>=MIN_RETAZO?' → GUARDAR en inventario':' → descarte'),lm+2,y+3.5)
+      doc.setTextColor(tubo.desp>=minRetazo(tipoSec)?12:130,tubo.desp>=minRetazo(tipoSec)?68:130,tubo.desp>=minRetazo(tipoSec)?124:130)
+      doc.text('  Sobrante: '+tubo.desp.toFixed(3)+' m'+(tubo.desp>=minRetazo(tipoSec)?' → GUARDAR en inventario':' → descarte'),lm+2,y+3.5)
       y+=altoSob+gap
     })
     y+=3
