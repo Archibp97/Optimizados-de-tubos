@@ -305,7 +305,7 @@
 </div>
 
 <script>
-const LONGITUD_TUBO=6.05, STORAGE_KEY='supabase_config'
+const LONGITUD_TUBO=6.00, STORAGE_KEY='supabase_config'
 
 // Umbrales de retazo — se pueden ajustar desde el análisis histórico
 // Se persisten en localStorage bajo la clave 'umbrales_retazo'
@@ -1113,7 +1113,7 @@ function generarPDF(){
       doc.text('GRUPO '+(i+1),lm+3,y+4.3)
       doc.setFont('helvetica','normal');doc.setFontSize(8)
       doc.setTextColor(esNuevo?8:12,esNuevo?100:68,esNuevo?65:124)
-      doc.text(esNuevo?'Tubo nuevo — 6.050 m':'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
+      doc.text(esNuevo?'Tubo nuevo — 6.00 m':'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
       y+=altoGrupo
 
       tubo.cuts.forEach((c,ci)=>{
