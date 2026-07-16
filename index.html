@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root{--bg:#fff;--bg2:#f5f5f4;--bg3:#efefed;--text:#1c1c1a;--text2:#6b6b67;--text3:#9b9b96;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.25);--green:#1D9E75;--gl:#E1F5EE;--gt:#085041;--blue:#378ADD;--bl:#E6F1FB;--bt:#0C447C;--red:#E24B4A;--rl:#FCEBEB;--rt:#791F1F;--amber:#BA7517;--al:#FAEEDA;--at:#633806;--r:10px;--rs:6px;}
   @media(prefers-color-scheme:dark){:root{--bg:#1e1e1c;--bg2:#2a2a28;--bg3:#323230;--text:#f0ede8;--text2:#a0a09a;--text3:#6b6b65;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.22);--gl:#04342C;--gt:#9FE1CB;--bl:#042C53;--bt:#B5D4F4;--rl:#501313;--rt:#F7C1C1;--al:#412402;--at:#FAC775;}}
@@ -124,6 +125,21 @@
   .filter-btn{padding:4px 12px;border-radius:99px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-size:12px;cursor:pointer;}
   .filter-btn.active{background:var(--text);color:var(--bg);border-color:transparent;}
 
+  /* ── Carga Excel de pedidos ── */
+  .upload-zone{border:1.5px dashed var(--border2);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:8px;}
+  .upload-zone:hover{border-color:var(--green);background:var(--gl);}
+  .upload-zone.dragover{border-color:var(--green);background:var(--gl);}
+  .upload-zone input[type=file]{display:none;}
+  .upload-icon{font-size:22px;margin-bottom:4px;}
+  .upload-label{font-size:12px;color:var(--text2);}
+  .upload-label strong{color:var(--text);cursor:pointer;}
+  .upload-label strong:hover{color:var(--green);}
+  .pill-order{background:var(--bg2);border:0.5px solid var(--border);border-radius:99px;padding:3px 9px;font-size:11px;color:var(--text2);display:inline-flex;align-items:center;gap:5px;max-width:200px;}
+  .pill-order .orden{color:var(--blue);font-weight:500;font-size:10px;}
+  .pill-order button{background:none;border:none;padding:0;margin:0;font-size:11px;color:var(--text3);cursor:pointer;line-height:1;}
+  .pill-order button:hover{color:var(--red);}
+  .corte-item-orden{font-size:10px;color:var(--blue);font-weight:500;margin-left:4px;}
+
   /* ── Panel análisis de umbral ── */
   .umbral-panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;}
   .umbral-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
@@ -216,16 +232,26 @@
   <div class="two-col">
     <div class="card">
       <div class="mec-section-title r8-color">● R8 <span id="r8-hint" style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.023 m · máx 2.00 m</span></div>
+
+      <!-- Carga Excel -->
+      <div class="upload-zone" id="r8-drop" onclick="document.getElementById('r8-file').click()" ondragover="dragOver(event,'r8-drop')" ondragleave="dragLeave('r8-drop')" ondrop="dropFile(event,'r8')">
+        <input type="file" id="r8-file" accept=".xlsx,.xls" onchange="cargarExcel(event,'r8')" onclick="event.stopPropagation()"/>
+        <div class="upload-icon">📂</div>
+        <div class="upload-label"><strong>Subir Excel</strong> o arrastrar aquí<br><span style="font-size:10px;color:var(--text3)">Columnas: ORDEN · ANCHO (o Suma de ANCHO)</span></div>
+      </div>
+      <div id="r8-upload-status" style="font-size:11px;color:var(--green);margin-bottom:6px;min-height:14px;"></div>
+
+      <!-- Ingreso manual con orden -->
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">O agregá manualmente:</div>
       <div class="row">
-        <input type="number" id="r8-input" placeholder="Ancho cortina (m)" step="0.001" min="0.023" max="2.00"/>
-        <button class="btn-green" onclick="addCorte('r8')">Agregar</button>
+        <input type="text" id="r8-orden" placeholder="N° pedido (opcional)" style="flex:0.8;font-size:12px;"/>
+        <input type="number" id="r8-input" placeholder="Ancho (m)" step="0.001" min="0.023" max="2.00"/>
+        <button class="btn-green" onclick="addCorte('r8')">+</button>
       </div>
       <div id="r8-error" class="err"></div>
-      <div class="hint">O pegá varios anchos:</div>
-      <textarea id="r8-bulk" placeholder="1.20, 0.85, 1.55..."></textarea>
-      <div class="row" style="margin-top:6px;"><button onclick="addBulk('r8')" style="flex:1;">Cargar lista</button><button onclick="clearCortes('r8')">Limpiar</button></div>
-      <div id="r8-summary" style="font-size:12px;color:var(--text2);margin-top:8px;"></div>
-      <div id="r8-list" class="cuts-wrap"></div>
+      <div id="r8-summary" style="font-size:12px;color:var(--text2);margin-top:4px;"></div>
+      <div id="r8-list" class="cuts-wrap" style="max-height:120px;"></div>
+      <div style="margin-top:4px;"><button onclick="clearCortes('r8')" style="font-size:11px;padding:3px 10px;">Limpiar todo</button></div>
       <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid var(--border);">
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">INVENTARIO R8</div>
         <div id="inv-r8-list"><div class="loading"><div class="spinner"></div></div></div>
@@ -234,16 +260,26 @@
 
     <div class="card">
       <div class="mec-section-title r16-color">● R16 <span id="r16-hint" style="font-size:11px;font-weight:400;color:var(--text3)">ancho − 0.023 m · máx 2.90 m</span></div>
+
+      <!-- Carga Excel -->
+      <div class="upload-zone" id="r16-drop" onclick="document.getElementById('r16-file').click()" ondragover="dragOver(event,'r16-drop')" ondragleave="dragLeave('r16-drop')" ondrop="dropFile(event,'r16')">
+        <input type="file" id="r16-file" accept=".xlsx,.xls" onchange="cargarExcel(event,'r16')" onclick="event.stopPropagation()"/>
+        <div class="upload-icon">📂</div>
+        <div class="upload-label"><strong>Subir Excel</strong> o arrastrar aquí<br><span style="font-size:10px;color:var(--text3)">Columnas: ORDEN · ANCHO (o Suma de ANCHO)</span></div>
+      </div>
+      <div id="r16-upload-status" style="font-size:11px;color:var(--green);margin-bottom:6px;min-height:14px;"></div>
+
+      <!-- Ingreso manual con orden -->
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">O agregá manualmente:</div>
       <div class="row">
-        <input type="number" id="r16-input" placeholder="Ancho cortina (m)" step="0.001" min="0.023" max="2.90"/>
-        <button class="btn-green" onclick="addCorte('r16')">Agregar</button>
+        <input type="text" id="r16-orden" placeholder="N° pedido (opcional)" style="flex:0.8;font-size:12px;"/>
+        <input type="number" id="r16-input" placeholder="Ancho (m)" step="0.001" min="0.023" max="2.90"/>
+        <button class="btn-green" onclick="addCorte('r16')">+</button>
       </div>
       <div id="r16-error" class="err"></div>
-      <div class="hint">O pegá varios anchos:</div>
-      <textarea id="r16-bulk" placeholder="2.10, 1.80, 2.40..."></textarea>
-      <div class="row" style="margin-top:6px;"><button onclick="addBulk('r16')" style="flex:1;">Cargar lista</button><button onclick="clearCortes('r16')">Limpiar</button></div>
-      <div id="r16-summary" style="font-size:12px;color:var(--text2);margin-top:8px;"></div>
-      <div id="r16-list" class="cuts-wrap"></div>
+      <div id="r16-summary" style="font-size:12px;color:var(--text2);margin-top:4px;"></div>
+      <div id="r16-list" class="cuts-wrap" style="max-height:120px;"></div>
+      <div style="margin-top:4px;"><button onclick="clearCortes('r16')" style="font-size:11px;padding:3px 10px;">Limpiar todo</button></div>
       <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid var(--border);">
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">INVENTARIO R16</div>
         <div id="inv-r16-list"><div class="loading"><div class="spinner"></div></div></div>
@@ -309,7 +345,7 @@ const LONGITUD_TUBO=6.00, STORAGE_KEY='supabase_config'
 
 // Umbrales de retazo — se pueden ajustar desde el análisis histórico
 // Se persisten en localStorage bajo la clave 'umbrales_retazo'
-let MIN_RETAZO_R8=0.5, MIN_RETAZO_R16=1
+let MIN_RETAZO_R8=0.5, MIN_RETAZO_R16=1.5
 ;(function(){
   try{
     const saved=JSON.parse(localStorage.getItem('umbrales_retazo')||'{}')
@@ -355,7 +391,6 @@ function actualizarLimitesPorLinea(){
 }
 
 let sb=null, currentPeriod='dia', historialData=[], filtroActual='todos', loteActualRemito=null
-let pedidos={r8:[],r16:[]}
 let inventario={r8:[],r16:[]}
 let chartAprov=null,chartTubos=null,chartDesp=null
 
@@ -440,46 +475,210 @@ function renderInventario(tipo){
 
 async function removeInv(tipo,i){inventario[tipo].splice(i,1);renderInventario(tipo);await persistInventario(tipo,inventario[tipo])}
 
+// pedidos ahora es array de {orden, medida} en lugar de array de números
+let pedidos={r8:[],r16:[]}
+
 function renderPedidos(tipo){
-  const s=document.getElementById(tipo+'-summary'),l=document.getElementById(tipo+'-list')
+  const s=document.getElementById(tipo+'-summary')
+  const l=document.getElementById(tipo+'-list')
   const p=pedidos[tipo]
   if(!p.length){s.textContent='';l.innerHTML='';return}
-  s.textContent=p.length+' cortes · suma: '+r2(p.reduce((a,b)=>a+b,0))+' m'
-  l.innerHTML=[...p].sort((a,b)=>b-a).map(c=>`<span class="pill">${c.toFixed(3)}</span>`).join('')
+  const suma=r2(p.reduce((a,b)=>a+b.medida,0))
+  s.textContent=p.length+' cortes · suma: '+suma+' m'
+  l.innerHTML=[...p]
+    .sort((a,b)=>b.medida-a.medida)
+    .map((c,i)=>{
+      // Encontrar índice original para poder borrar
+      const idx=pedidos[tipo].indexOf(c)
+      return`<span class="pill-order">
+        <span>${c.medida.toFixed(3)}m</span>
+        ${c.orden?`<span class="orden">#${c.orden}</span>`:''}
+        <button onclick="removeCorte('${tipo}',${idx})" title="Quitar">×</button>
+      </span>`
+    }).join('')
+}
+
+function removeCorte(tipo,idx){
+  pedidos[tipo].splice(idx,1)
+  renderPedidos(tipo)
 }
 
 function addCorte(tipo){
-  const inp=document.getElementById(tipo+'-input'),err=document.getElementById(tipo+'-error')
-  const cfg=CFG[tipo],v=parseFloat(inp.value)
+  const inp=document.getElementById(tipo+'-input')
+  const ordenInp=document.getElementById(tipo+'-orden')
+  const err=document.getElementById(tipo+'-error')
+  const cfg=CFG[tipo]
+  const v=parseFloat(inp.value)
   if(isNaN(v)||v<=0){err.textContent='Ingresá un ancho válido.';return}
   const c=r3(v-cfg.offset)
   const maxTubo=getMaxTubo(tipo)
   const maxAncho=getMax(tipo)
   if(c>maxTubo){err.textContent='Ancho '+v+' m → tubo '+c.toFixed(3)+' m supera el máx '+cfg.label+' ('+maxAncho.toFixed(2)+' m ancho / '+maxTubo.toFixed(3)+' m tubo).';return}
   if(c<=0){err.textContent='Ancho muy pequeño.';return}
-  err.textContent='';pedidos[tipo].push(c);inp.value='';inp.focus();renderPedidos(tipo)
+  const orden=ordenInp.value.trim().toUpperCase()||''
+  err.textContent=''
+  pedidos[tipo].push({orden,medida:c})
+  inp.value='';ordenInp.value='';inp.focus()
+  renderPedidos(tipo)
+}
+
+function clearCortes(tipo){
+  pedidos[tipo]=[]
+  renderPedidos(tipo)
+  document.getElementById(tipo+'-error').textContent=''
+  document.getElementById(tipo+'-upload-status').textContent=''
+}
+
+// ── Carga Excel ──────────────────────────────────────────────────────────────
+function dragOver(e,id){e.preventDefault();document.getElementById(id).classList.add('dragover')}
+function dragLeave(id){document.getElementById(id).classList.remove('dragover')}
+function dropFile(e,tipo){
+  e.preventDefault()
+  dragLeave(tipo+'-drop')
+  const file=e.dataTransfer.files[0]
+  if(!file)return
+  // Limpiar pedidos antes de cargar para evitar duplicados
+  pedidos.r8=[]
+  pedidos.r16=[]
+  renderPedidos('r8')
+  renderPedidos('r16')
+  procesarExcel(file,tipo)
+}
+
+function cargarExcel(e,tipo){
+  const file=e.target.files[0]
+  if(!file)return
+  // Limpiar pedidos antes de cargar para evitar duplicados
+  pedidos.r8=[]
+  pedidos.r16=[]
+  renderPedidos('r8')
+  renderPedidos('r16')
+  procesarExcel(file,tipo)
+  // Reset input para permitir subir el mismo archivo de nuevo
+  e.target.value=''
+}
+
+function procesarExcel(file, tipoFiltro){
+  const statusR8=document.getElementById('r8-upload-status')
+  const statusR16=document.getElementById('r16-upload-status')
+  ;[statusR8,statusR16].forEach(s=>{s.textContent='Leyendo archivo...';s.style.color='var(--text2)'})
+
+  const reader=new FileReader()
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result)
+      const wb=XLSX.read(data,{type:'array'})
+      const ws=wb.Sheets[wb.SheetNames[0]]
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''})
+
+      if(!rows.length){
+        ;[statusR8,statusR16].forEach(s=>{s.textContent='El archivo está vacío.';s.style.color='var(--red)'})
+        return
+      }
+
+      const keys=Object.keys(rows[0])
+
+      // Detectar columnas — prioriza nombres exactos del archivo de Panorama
+      const colOrden   = keys.find(k=>/^orden$/i.test(k))    || keys.find(k=>/orden/i.test(k))
+      const colTubo    = keys.find(k=>/^tubo$/i.test(k))     || keys.find(k=>/tubo/i.test(k))
+      const colCorte   = keys.find(k=>/^corte\s*tubo$/i.test(k)) || keys.find(k=>/corte.*tubo|tubo.*corte/i.test(k))
+      const colTela    = keys.find(k=>/^tela$/i.test(k))     || keys.find(k=>/tela/i.test(k))
+      const colPedido  = keys.find(k=>/^pedido$/i.test(k))   || keys.find(k=>/pedido/i.test(k))
+      // Fallback: si no hay CORTE TUBO, usar ANCHO y restar offset
+      const colAncho   = keys.find(k=>/^ancho$/i.test(k))    || keys.find(k=>/suma.*ancho|ancho/i.test(k))
+
+      if(!colCorte && !colAncho){
+        ;[statusR8,statusR16].forEach(s=>{
+          s.textContent='No se encontró columna de medida. Columnas: '+keys.join(', ')
+          s.style.color='var(--red)'
+        })
+        return
+      }
+
+      let agR8=0,agR16=0,omR8=0,omR16=0
+
+      rows.forEach(row=>{
+        // Determinar tipo de tubo
+        const tuboVal=colTubo?String(row[colTubo]).trim().toUpperCase():''
+        const esR8 =tuboVal.includes('R8')  || tuboVal.includes('TUBO R8')
+        const esR16=tuboVal.includes('R16') || tuboVal.includes('TUBO R16')
+
+        // Si el archivo no tiene columna TUBO o no es R8/R16, filtrar por tipoFiltro
+        if(colTubo && !esR8 && !esR16) return  // TUBO 2, etc — ignorar
+
+        // Medida del tubo
+        let medida
+        if(colCorte){
+          medida=parseFloat(String(row[colCorte]).replace(',','.'))
+        } else {
+          const ancho=parseFloat(String(row[colAncho]).replace(',','.'))
+          if(!isNaN(ancho)){
+            // Si no sabemos el tipo, usar tipoFiltro para el offset
+            const cfg=CFG[tipoFiltro]
+            medida=r3(ancho-cfg.offset)
+          }
+        }
+
+        if(isNaN(medida)||medida<=0) return
+
+        const orden  = colOrden  ? String(row[colOrden]).trim().toUpperCase()  : ''
+        const tela   = colTela   ? String(row[colTela]).trim()                  : ''
+        const pedido = colPedido ? String(row[colPedido]).trim().toUpperCase()  : ''
+
+        const item={orden, tela, pedido, medida}
+
+        // Asignar al mecanismo correcto
+        if(colTubo){
+          if(esR8){
+            const max=getMaxTubo('r8')
+            if(medida>0&&medida<=max){pedidos.r8.push(item);agR8++}else{omR8++}
+          } else if(esR16){
+            const max=getMaxTubo('r16')
+            if(medida>0&&medida<=max){pedidos.r16.push(item);agR16++}else{omR16++}
+          }
+        } else {
+          // Sin columna TUBO: asignar al tipo del botón que se usó
+          const max=getMaxTubo(tipoFiltro)
+          if(medida>0&&medida<=max){pedidos[tipoFiltro].push(item)}
+        }
+      })
+
+      renderPedidos('r8'); renderPedidos('r16')
+
+      // Status R8
+      if(agR8>0||omR8>0){
+        statusR8.textContent=`✓ ${agR8} cortes R8 cargados${omR8?' ('+omR8+' omitidos)':''}`
+        statusR8.style.color='var(--green)'
+      } else if(colTubo){
+        statusR8.textContent='Sin cortes R8 en este archivo.'
+        statusR8.style.color='var(--text2)'
+      }
+
+      // Status R16
+      if(agR16>0||omR16>0){
+        statusR16.textContent=`✓ ${agR16} cortes R16 cargados${omR16?' ('+omR16+' omitidos)':''}`
+        statusR16.style.color='var(--green)'
+      } else if(colTubo){
+        statusR16.textContent='Sin cortes R16 en este archivo.'
+        statusR16.style.color='var(--text2)'
+      }
+
+    }catch(err){
+      ;[statusR8,statusR16].forEach(s=>{
+        s.textContent='Error al leer: '+err.message
+        s.style.color='var(--red)'
+      })
+    }
+  }
+  reader.readAsArrayBuffer(file)
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('r8-input').addEventListener('keydown',e=>{if(e.key==='Enter')addCorte('r8')})
   document.getElementById('r16-input').addEventListener('keydown',e=>{if(e.key==='Enter')addCorte('r16')})
   document.getElementById('paquete-input').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase()})
-  actualizarLimitesPorLinea() // Setear límites correctos al cargar (SHEER por defecto)
+  actualizarLimitesPorLinea()
 })
-
-function addBulk(tipo){
-  const raw=document.getElementById(tipo+'-bulk').value
-  const cfg=CFG[tipo]
-  const maxTubo=getMaxTubo(tipo)
-  const vals=raw.split(/[\s,;]+/).map(s=>parseFloat(s)).filter(n=>!isNaN(n)&&n>0)
-  let sk=0
-  vals.forEach(v=>{const c=r3(v-cfg.offset);if(c>maxTubo||c<=0){sk++;return}pedidos[tipo].push(c)})
-  document.getElementById(tipo+'-bulk').value=''
-  document.getElementById(tipo+'-error').textContent=sk>0?sk+' ancho(s) fuera de rango omitidos.':''
-  renderPedidos(tipo)
-}
-
-function clearCortes(tipo){pedidos[tipo]=[];renderPedidos(tipo);document.getElementById(tipo+'-error').textContent=''}
 
 function getCombinations(arr,r){
   const res=[]
@@ -487,31 +686,53 @@ function getCombinations(arr,r){
   c(0,[]);return res
 }
 
-function greedyPack(cuts,len,invCopy){
-  const usedIdx=[],tubos=[],rem=[...cuts].sort((a,b)=>b-a)
+// greedyPack ahora recibe array de {orden,medida} y retorna cuts como {orden,medida}
+function greedyPack(pedidosArr,len,invCopy){
+  const usedIdx=[],tubos=[]
+  // Ordenar de mayor a menor por medida, manteniendo objeto completo
+  const rem=[...pedidosArr].sort((a,b)=>b.medida-a.medida)
   const inv=[...invCopy].sort((a,b)=>b-a)
+
   for(let i=0;i<inv.length&&rem.length;i++){
     const ret=inv[i];let esp=ret,fit=[],tr=[...rem],ch=true
     while(ch&&esp>0.001){
       ch=false;let best=null,bs=0
       for(let r=1;r<=tr.length;r++){
-        for(const ic of getCombinations(tr,r)){const s=r3(ic.reduce((a,idx)=>a+tr[idx],0));if(s<=esp&&s>bs){bs=s;best=ic}}
+        for(const ic of getCombinations(tr,r)){
+          const s=r3(ic.reduce((a,idx)=>a+tr[idx].medida,0))
+          if(s<=esp&&s>bs){bs=s;best=ic}
+        }
         if(bs>esp-0.001)break
       }
-      if(best){fit.push(...best.map(idx=>tr[idx]));best.sort((a,b)=>b-a).forEach(idx=>tr.splice(idx,1));esp=r3(esp-bs);ch=true}
+      if(best){
+        fit.push(...best.map(idx=>tr[idx]))
+        best.sort((a,b)=>b-a).forEach(idx=>tr.splice(idx,1))
+        esp=r3(esp-bs);ch=true
+      }
     }
-    if(fit.length>0){tubos.push({cuts:fit,fromInv:true,rs:ret,usado:r3(ret-esp),desp:r3(esp)});usedIdx.push(i);rem.splice(0,rem.length,...tr)}
+    if(fit.length>0){
+      tubos.push({cuts:fit,fromInv:true,rs:ret,usado:r3(ret-esp),desp:r3(esp)})
+      usedIdx.push(i)
+      rem.splice(0,rem.length,...tr)
+    }
   }
+
   let remRest=[...rem]
   while(remRest.length){
     let bc=null,bs=0
     for(let r=1;r<=remRest.length;r++){
-      for(const ic of getCombinations(remRest,r)){const s=r3(ic.reduce((a,i)=>a+remRest[i],0));if(s<=len&&s>bs){bs=s;bc=ic}}
+      for(const ic of getCombinations(remRest,r)){
+        const s=r3(ic.reduce((a,i)=>a+remRest[i].medida,0))
+        if(s<=len&&s>bs){bs=s;bc=ic}
+      }
       if(bs>len-0.001)break
     }
-    if(!bc){tubos.push({cuts:[remRest[0]],fromInv:false,rs:len,usado:remRest[0],desp:r3(len-remRest[0])});remRest.splice(0,1);continue}
+    if(!bc){
+      tubos.push({cuts:[remRest[0]],fromInv:false,rs:len,usado:remRest[0].medida,desp:r3(len-remRest[0].medida)})
+      remRest.splice(0,1);continue
+    }
     const chosen=bc.map(i=>remRest[i])
-    const u=r3(chosen.reduce((a,b)=>a+b,0))
+    const u=r3(chosen.reduce((a,b)=>a+b.medida,0))
     tubos.push({cuts:chosen,fromInv:false,rs:len,usado:u,desp:r3(len-u)})
     bc.sort((a,b)=>b-a).forEach(i=>remRest.splice(i,1))
   }
@@ -527,7 +748,6 @@ function calcMetrics(tipo,tubos,invCopy,usedIdx,pedidosList,len){
   const retGen=tubos.filter(t=>t.desp>=mr).length
   return{totalNuevos,totalMat,totalDesp,aprov,retGen}
 }
-
 function renderSeccion(tipo,tubos,metrics){
   const cfg=CFG[tipo]
   let html=`<div class="mec-section ${tipo}">
@@ -557,7 +777,14 @@ function renderSeccion(tipo,tubos,metrics){
         ${rp>0?`<div class="seg ret" style="width:${rp}%">${rp>6?t.desp.toFixed(2)+' m':''}</div>`:''}
         ${wp>0?`<div class="seg waste" style="width:${wp}%">${wp>4?t.desp.toFixed(2)+' m':''}</div>`:''}
       </div>
-      <div class="cuts-wrap">${t.cuts.map(c=>`<span class="pill${t.fromInv?' inv':''}">${c.toFixed(3)}</span>`).join('')}</div>
+      <div class="cuts-wrap">${t.cuts.map(c=>{
+        const medida=c.medida||parseFloat(c)||0
+        const orden=c.orden||''
+        const tela=c.tela||''
+        return`<span class="pill${t.fromInv?' inv':''}" title="${tela}">
+          ${medida.toFixed(3)}m${orden?` <span style="color:var(--blue);font-size:10px;font-weight:500">#${orden}</span>`:''}
+        </span>`
+      }).join('')}</div>
     </div>`
   })
   html+='</div>'
@@ -577,7 +804,6 @@ function optimizar(){
   const resR16=greedyPack(pedidos.r16,LONGITUD_TUBO,[...inventario.r16])
   const mR8=pedidos.r8.length?calcMetrics('r8',resR8.tubos,[...inventario.r8],resR8.usedIdx,pedidos.r8,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
   const mR16=pedidos.r16.length?calcMetrics('r16',resR16.tubos,[...inventario.r16],resR16.usedIdx,pedidos.r16,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
-
   const invR8Final=[...inventario.r8.filter((_,i)=>!resR8.usedIdx.includes(i)),...resR8.tubos.filter(t=>t.desp>=MIN_RETAZO_R8).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO_R8).sort((a,b)=>b-a)
   const invR16Final=[...inventario.r16.filter((_,i)=>!resR16.usedIdx.includes(i)),...resR16.tubos.filter(t=>t.desp>=MIN_RETAZO_R16).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO_R16).sort((a,b)=>b-a)
 
@@ -629,6 +855,8 @@ async function guardarLote(invR8,invR16,tubosNuevos,retazosUsados,aprov,desp,tub
   ])
   pedidos.r8=[];pedidos.r16=[]
   document.getElementById('paquete-input').value=''
+  document.getElementById('r8-upload-status').textContent=''
+  document.getElementById('r16-upload-status').textContent=''
   renderPedidos('r8');renderPedidos('r16')
   renderInventario('r8');renderInventario('r16')
   const etiqueta=linea+(paquete?' — '+paquete:'')
@@ -1113,17 +1341,45 @@ function generarPDF(){
       doc.text('GRUPO '+(i+1),lm+3,y+4.3)
       doc.setFont('helvetica','normal');doc.setFontSize(8)
       doc.setTextColor(esNuevo?8:12,esNuevo?100:68,esNuevo?65:124)
-      doc.text(esNuevo?'Tubo nuevo — 6.00 m':'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
+      doc.text(esNuevo?'Tubo nuevo — 6.000 m':'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
       y+=altoGrupo
 
       tubo.cuts.forEach((c,ci)=>{
+        // Soporta formato viejo (número) y nuevo (objeto {orden,tela,medida})
+        const cv   = parseFloat(c.medida||c)||0
+        const orden= c.orden||''
+        const tela = c.tela||''
+        const hExtra= tela?4:0
+        const hFila = altoCorte+hExtra
+
         doc.setFillColor(ci%2===0?252:246,ci%2===0?252:246,ci%2===0?252:246)
-        doc.rect(lm,y,w,altoCorte,'F')
+        doc.rect(lm,y,w,hFila,'F')
+
+        // Número de corte
         doc.setTextColor(120,120,120);doc.setFont('helvetica','normal');doc.setFontSize(8)
         doc.text('  '+(ci+1)+'.',lm+2,y+4.2)
+
+        // Medida
         doc.setTextColor(15,15,15);doc.setFont('helvetica','bold');doc.setFontSize(11)
-        doc.text(c.toFixed(3)+' m',lm+12,y+4.5)
-        y+=altoCorte
+        doc.text(cv.toFixed(3)+' m',lm+12,y+4.5)
+
+        // Número de orden
+        if(orden){
+          doc.setFont('helvetica','bold');doc.setFontSize(8.5)
+          doc.setTextColor(12,68,124)
+          doc.text('Pedido: #'+orden, lm+45, y+4.5)
+        }
+
+        // Tela (segunda línea)
+        if(tela){
+          doc.setFont('helvetica','normal');doc.setFontSize(7)
+          doc.setTextColor(110,110,110)
+          // Truncar si es muy larga
+          const telaCorta=tela.length>55?tela.substring(0,55)+'…':tela
+          doc.text('  '+telaCorta, lm+2, y+8.8)
+        }
+
+        y+=hFila
       })
 
       doc.setFillColor(tubo.desp>=minRetazo(tipoSec)?230:245,tubo.desp>=minRetazo(tipoSec)?240:245,tubo.desp>=minRetazo(tipoSec)?252:245)
