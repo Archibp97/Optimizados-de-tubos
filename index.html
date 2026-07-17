@@ -879,7 +879,7 @@ function extraerCortes(data, tipo){
   data.forEach(row=>{
     const tubos=Array.isArray(row.cortes?.[tipo])?row.cortes[tipo]:[]
     tubos.forEach(tubo=>{
-      if(Array.isArray(tubo.cuts))tubo.cuts.forEach(c=>cortes.push(parseFloat(c)))
+      if(Array.isArray(tubo.cuts))tubo.cuts.forEach(c=>cortes.push(parseFloat(c.medida??c)||0))
     })
   })
   return cortes.filter(c=>!isNaN(c)&&c>0).sort((a,b)=>a-b)
@@ -1153,12 +1153,19 @@ function renderTubosDetalle(tubos,loteId,tipo){
           <span class="badge ${tubo.fromInv?'blue':'green'}">${tubo.fromInv?'Retazo '+(rs>0?rs.toFixed(3):'?')+' m':'Tubo nuevo'}</span>
           <span style="font-size:12px;font-weight:400;color:var(--text2)">${desp>=mr?'Sob. '+desp.toFixed(3)+' m → inv.':'Desc. '+desp.toFixed(3)+' m'}</span>
         </div>
-        ${cuts.map((c,ci)=>`
+        ${cuts.map((c,ci)=>{
+            const medida=parseFloat(c.medida??c)||0
+            const orden=c.orden||''
+            const tela=c.tela||''
+            return`
           <div class="corte-item">
             <span style="color:var(--text3);font-size:12px;min-width:50px;">Corte ${ci+1}</span>
-            <strong>${parseFloat(c).toFixed(3)} m</strong>
+            <strong>${medida.toFixed(3)} m</strong>
+            ${orden?`<span style="color:var(--blue);font-size:11px;font-weight:500">#${orden}</span>`:''}
+            ${tela?`<span style="color:var(--text3);font-size:10px">${tela}</span>`:''}
             <button class="btn-sm btn-red" onclick="eliminarCorteHist(${loteId},'${tipo}',${ti},${ci})">×</button>
-          </div>`).join('')}
+          </div>`
+          }).join('')}
       </div>`
     }).join('')
   }catch(e){
@@ -1180,7 +1187,8 @@ async function eliminarCorteHist(loteId,tipo,tuboIdx,corteIdx){
   const cortes=JSON.parse(JSON.stringify(lote.cortes||{}))
   const arr=cortes[tipo]||[]
   const c=arr[tuboIdx]?.cuts[corteIdx]
-  confirmar('Eliminar corte',`¿Eliminar corte ${c?.toFixed(3)} m de ${tipo.toUpperCase()}?`,async()=>{
+  const cVal=parseFloat(c?.medida??c)||0
+  confirmar('Eliminar corte',`¿Eliminar corte ${cVal.toFixed(3)} m de ${tipo.toUpperCase()}?`,async()=>{
     arr[tuboIdx].cuts.splice(corteIdx,1)
     if(arr[tuboIdx].cuts.length===0)arr.splice(tuboIdx,1)
     cortes[tipo]=arr
@@ -1264,11 +1272,18 @@ function renderRemito(lote){
             </span>
           </div>
         </div>
-        ${cuts.map((c,ci)=>`<div class="corte-item">
-          <span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span>
-          <strong style="font-size:15px;">${parseFloat(c).toFixed(3)} m</strong>
-          <span></span>
-        </div>`).join('')}
+        ${cuts.map((c,ci)=>{
+          const medida=parseFloat(c.medida??c)||0
+          const orden=c.orden||''
+          const tela=c.tela||''
+          return`<div class="corte-item">
+            <span style="color:var(--text3);font-size:12px;">Corte ${ci+1}</span>
+            <strong style="font-size:15px;">${medida.toFixed(3)} m</strong>
+            ${orden?`<span style="color:var(--blue);font-size:11px;font-weight:500">#${orden}</span>`:''}
+            ${tela?`<span style="color:var(--text3);font-size:10px">${tela}</span>`:''}
+            <span></span>
+          </div>`
+        }).join('')}
       </div>`
     }).join('')
   }
