@@ -227,6 +227,9 @@
       </select>
       <input type="text" id="paquete-input" placeholder="PQ1, PQ2..." style="text-transform:uppercase;" maxlength="10"/>
     </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;">
+      ⚙ Tubo: <strong>${LONGITUD_TUBO.toFixed(2)} m</strong> nominal · largo útil real <strong>${LONGITUD_UTIL.toFixed(4)} m</strong> (tolerancia cuchilla: ${(KERF*100).toFixed(2)} cm)
+    </div>
   </div>
 
   <div class="two-col">
@@ -341,7 +344,10 @@
 </div>
 
 <script>
-const LONGITUD_TUBO=6, STORAGE_KEY='supabase_config'
+const LONGITUD_TUBO=6.00          // Largo nominal del tubo
+const KERF=0.0025                  // Tolerancia de cuchilla por tubo (0.25 cm)
+const LONGITUD_UTIL=LONGITUD_TUBO-KERF  // Largo útil real = 5.9975 m
+const STORAGE_KEY='supabase_config'
 
 // Umbrales de retazo — se pueden ajustar desde el análisis histórico
 // Se persisten en localStorage bajo la clave 'umbrales_retazo'
@@ -362,8 +368,8 @@ const CFG={
 }
 // Anchos máximos de CORTINA (antes de restar offset) por línea y mecanismo
 const MAXIMOS={
-  ENROLLABLE:{ r8:1.90, r16:2.70 },
-  SHEER:     { r8:2.10, r16:3.0 }
+  ENROLLABLE:{ r8:1.80, r16:2.60 },
+  SHEER:     { r8:2.00, r16:2.90 }
 }
 
 function getMax(tipo){
@@ -630,11 +636,13 @@ function procesarExcel(file, tipoFiltro){
         // Asignar al mecanismo correcto
         if(colTubo){
           if(esR8){
-            const max=getMaxTubo('r8')
-            if(medida>0&&medida<=max){pedidos.r8.push(item);agR8++}else{omR8++}
+            // Si viene de CORTE TUBO, la medida ya es del tubo — solo validar que sea positiva y quepa en el tubo
+            // Si viene de ANCHO, validar contra el máximo del mecanismo
+            const valido = colCorte ? (medida > 0 && medida < LONGITUD_TUBO) : (medida > 0 && medida <= getMaxTubo('r8'))
+            if(valido){pedidos.r8.push(item);agR8++}else{omR8++}
           } else if(esR16){
-            const max=getMaxTubo('r16')
-            if(medida>0&&medida<=max){pedidos.r16.push(item);agR16++}else{omR16++}
+            const valido = colCorte ? (medida > 0 && medida < LONGITUD_TUBO) : (medida > 0 && medida <= getMaxTubo('r16'))
+            if(valido){pedidos.r16.push(item);agR16++}else{omR16++}
           }
         } else {
           // Sin columna TUBO: asignar al tipo del botón que se usó
@@ -686,57 +694,82 @@ function getCombinations(arr,r){
   c(0,[]);return res
 }
 
-// greedyPack ahora recibe array de {orden,medida} y retorna cuts como {orden,medida}
-function greedyPack(pedidosArr,len,invCopy){
-  const usedIdx=[],tubos=[]
-  // Ordenar de mayor a menor por medida, manteniendo objeto completo
+// greedyPack — garantiza que TODOS los cortes sean asignados
+// Usa First Fit Decreasing con mejora local — O(n²) en lugar de exponencial
+function greedyPack(pedidosArr, len, invCopy){
+  const usedIdx=[], tubos=[]
+  if(!pedidosArr.length) return {tubos, usedIdx}
+
+  // Copia y ordena de mayor a menor
   const rem=[...pedidosArr].sort((a,b)=>b.medida-a.medida)
   const inv=[...invCopy].sort((a,b)=>b-a)
 
+  // ── Paso 1: usar retazos del inventario ─────────────────────────────────
   for(let i=0;i<inv.length&&rem.length;i++){
-    const ret=inv[i];let esp=ret,fit=[],tr=[...rem],ch=true
-    while(ch&&esp>0.001){
-      ch=false;let best=null,bs=0
-      for(let r=1;r<=tr.length;r++){
-        for(const ic of getCombinations(tr,r)){
-          const s=r3(ic.reduce((a,idx)=>a+tr[idx].medida,0))
-          if(s<=esp&&s>bs){bs=s;best=ic}
-        }
-        if(bs>esp-0.001)break
-      }
-      if(best){
-        fit.push(...best.map(idx=>tr[idx]))
-        best.sort((a,b)=>b-a).forEach(idx=>tr.splice(idx,1))
-        esp=r3(esp-bs);ch=true
+    const ret=inv[i]
+    const fit=[]
+    let esp=ret
+    // Greedy: iterar todos los cortes restantes y meter los que quepan
+    const noUsados=[]
+    for(const item of rem){
+      if(item.medida<=esp+0.0001){
+        fit.push(item)
+        esp=r3(esp-item.medida)
+      } else {
+        noUsados.push(item)
       }
     }
     if(fit.length>0){
-      tubos.push({cuts:fit,fromInv:true,rs:ret,usado:r3(ret-esp),desp:r3(esp)})
+      tubos.push({
+        cuts:fit, fromInv:true, rs:ret,
+        usado:r3(ret-esp), desp:r3(esp)
+      })
       usedIdx.push(i)
-      rem.splice(0,rem.length,...tr)
+      rem.splice(0,rem.length,...noUsados)
     }
   }
 
-  let remRest=[...rem]
-  while(remRest.length){
-    let bc=null,bs=0
-    for(let r=1;r<=remRest.length;r++){
-      for(const ic of getCombinations(remRest,r)){
-        const s=r3(ic.reduce((a,i)=>a+remRest[i].medida,0))
-        if(s<=len&&s>bs){bs=s;bc=ic}
+  // ── Paso 2: tubos nuevos — First Fit Decreasing ──────────────────────────
+  // Estructura: array de {cuts, espacio_restante}
+  const bins=[]
+
+  for(const item of rem){
+    // Buscar el bin con menor espacio restante que aún quepa (Best Fit)
+    let mejorBin=-1, mejorEsp=Infinity
+    for(let b=0;b<bins.length;b++){
+      const esp=bins[b].esp
+      if(item.medida<=esp+0.0001 && esp<mejorEsp){
+        mejorEsp=esp
+        mejorBin=b
       }
-      if(bs>len-0.001)break
     }
-    if(!bc){
-      tubos.push({cuts:[remRest[0]],fromInv:false,rs:len,usado:remRest[0].medida,desp:r3(len-remRest[0].medida)})
-      remRest.splice(0,1);continue
+    if(mejorBin>=0){
+      bins[mejorBin].cuts.push(item)
+      bins[mejorBin].esp=r3(bins[mejorBin].esp-item.medida)
+    } else {
+      // Abrir tubo nuevo
+      bins.push({cuts:[item], esp:r3(len-item.medida)})
     }
-    const chosen=bc.map(i=>remRest[i])
-    const u=r3(chosen.reduce((a,b)=>a+b.medida,0))
-    tubos.push({cuts:chosen,fromInv:false,rs:len,usado:u,desp:r3(len-u)})
-    bc.sort((a,b)=>b-a).forEach(i=>remRest.splice(i,1))
   }
-  return{tubos,usedIdx}
+
+  // Convertir bins a tubos
+  for(const bin of bins){
+    tubos.push({
+      cuts:bin.cuts,
+      fromInv:false,
+      rs:len,
+      usado:r3(len-bin.esp),
+      desp:r3(bin.esp)
+    })
+  }
+
+  // ── Verificación de integridad ────────────────────────────────────────────
+  const totalAsignados=tubos.reduce((a,t)=>a+t.cuts.length,0)
+  if(totalAsignados!==pedidosArr.length){
+    console.error(`INTEGRIDAD: ${pedidosArr.length} cortes ingresados, ${totalAsignados} asignados`)
+  }
+
+  return {tubos, usedIdx}
 }
 
 function calcMetrics(tipo,tubos,invCopy,usedIdx,pedidosList,len){
@@ -800,10 +833,10 @@ function optimizar(){
     document.getElementById('results').innerHTML='<div class="empty">Cargá al menos un corte en R8 o R16.</div>';return
   }
 
-  const resR8=greedyPack(pedidos.r8,LONGITUD_TUBO,[...inventario.r8])
-  const resR16=greedyPack(pedidos.r16,LONGITUD_TUBO,[...inventario.r16])
-  const mR8=pedidos.r8.length?calcMetrics('r8',resR8.tubos,[...inventario.r8],resR8.usedIdx,pedidos.r8,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
-  const mR16=pedidos.r16.length?calcMetrics('r16',resR16.tubos,[...inventario.r16],resR16.usedIdx,pedidos.r16,LONGITUD_TUBO):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
+  const resR8=greedyPack(pedidos.r8,LONGITUD_UTIL,[...inventario.r8])
+  const resR16=greedyPack(pedidos.r16,LONGITUD_UTIL,[...inventario.r16])
+  const mR8=pedidos.r8.length?calcMetrics('r8',resR8.tubos,[...inventario.r8],resR8.usedIdx,pedidos.r8,LONGITUD_UTIL):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
+  const mR16=pedidos.r16.length?calcMetrics('r16',resR16.tubos,[...inventario.r16],resR16.usedIdx,pedidos.r16,LONGITUD_UTIL):{totalNuevos:0,aprov:'—',totalDesp:0,retGen:0}
   const invR8Final=[...inventario.r8.filter((_,i)=>!resR8.usedIdx.includes(i)),...resR8.tubos.filter(t=>t.desp>=MIN_RETAZO_R8).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO_R8).sort((a,b)=>b-a)
   const invR16Final=[...inventario.r16.filter((_,i)=>!resR16.usedIdx.includes(i)),...resR16.tubos.filter(t=>t.desp>=MIN_RETAZO_R16).map(t=>r3(t.desp))].filter(r=>r>=MIN_RETAZO_R16).sort((a,b)=>b-a)
 
@@ -1356,7 +1389,7 @@ function generarPDF(){
       doc.text('GRUPO '+(i+1),lm+3,y+4.3)
       doc.setFont('helvetica','normal');doc.setFontSize(8)
       doc.setTextColor(esNuevo?8:12,esNuevo?100:68,esNuevo?65:124)
-      doc.text(esNuevo?'Tubo nuevo — 6.000 m':'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
+      doc.text(esNuevo?`Tubo nuevo — ${LONGITUD_TUBO.toFixed(3)} m  (útil: ${LONGITUD_UTIL.toFixed(4)} m)`:'Retazo — '+tubo.rs.toFixed(3)+' m',lm+28,y+4.3)
       y+=altoGrupo
 
       tubo.cuts.forEach((c,ci)=>{
